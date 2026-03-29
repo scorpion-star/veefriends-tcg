@@ -61,6 +61,7 @@ export default function GameRoomPage() {
   const [isRevealing, setIsRevealing] = useState(false)
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevResKeyRef = useRef<number>(-1)
+  const cardMapRef = useRef<Record<number, Card>>({})
 
   // Determine role
   const myKey: PlayerKey | null = useMemo(() => {
@@ -133,6 +134,7 @@ export default function GameRoomPage() {
     if (cards) {
       const map: Record<number, Card> = {}
       cards.forEach((c: Card) => { map[c.id] = c })
+      cardMapRef.current = map
       setCardMap(map)
     }
   }, [supabase])
@@ -178,7 +180,7 @@ export default function GameRoomPage() {
           gs.player1.currentCard, gs.player2.currentCard,
           gs.lastRound?.p1CardId, gs.lastRound?.p2CardId,
         ].filter((id): id is number => id != null)
-        allIds.forEach(id => { if (!cardMap[id]) missing.add(id) })
+        allIds.forEach(id => { if (!cardMapRef.current[id]) missing.add(id) })
 
         if (missing.size > 0) {
           const { data: cards } = await supabase.from('cards').select('*').in('id', [...missing])
@@ -186,6 +188,7 @@ export default function GameRoomPage() {
             setCardMap(prev => {
               const next = { ...prev }
               cards.forEach((c: Card) => { next[c.id] = c })
+              cardMapRef.current = next
               return next
             })
           }
@@ -194,10 +197,10 @@ export default function GameRoomPage() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [supabase, gameId, cardMap])
+  }, [supabase, gameId]) // cardMap intentionally excluded — use cardMapRef to avoid subscription churn
 
   const doAction = useCallback(async (action: object) => {
-    if (acting || isRevealing) return
+    if (acting) return
     setActing(true)
     setError(null)
     try {
@@ -211,7 +214,7 @@ export default function GameRoomPage() {
     } finally {
       setActing(false)
     }
-  }, [acting, isRevealing, gameId])
+  }, [acting, gameId])
 
   if (loading || !state || !myKey) {
     return (
