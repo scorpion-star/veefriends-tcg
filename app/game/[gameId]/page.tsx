@@ -159,6 +159,29 @@ export default function GameRoomPage() {
     }
   }, [state?.turn, state?.currentRound.tieCount]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Polling fallback — keeps game in sync if realtime subscription drops
+  useEffect(() => {
+    const poll = setInterval(async () => {
+      const { data } = await supabase
+        .from('game_sessions')
+        .select('*')
+        .eq('id', gameId)
+        .single()
+      if (data) {
+        setSession(prev => {
+          if (!prev) return data as GameSession
+          const prevTurn = prev.game_state?.turn
+          const nextTurn = (data as GameSession).game_state?.turn
+          const prevPhase = prev.game_state?.phase
+          const nextPhase = (data as GameSession).game_state?.phase
+          if (prevTurn !== nextTurn || prevPhase !== nextPhase) return data as GameSession
+          return prev
+        })
+      }
+    }, 3000)
+    return () => clearInterval(poll)
+  }, [supabase, gameId])
+
   // Realtime subscription
   useEffect(() => {
     const channel = supabase
