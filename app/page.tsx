@@ -7,7 +7,6 @@ import SparkleTitle from './components/SparkleTitle'
 import CoinIcon from './components/CoinIcon'
 import AvatarUpload from './components/AvatarUpload'
 import UsernameSetup from './components/UsernameSetup'
-import BugReportModal from './components/BugReportModal'
 
 const BG = "min-h-screen relative overflow-hidden"
 const OVERLAY = "absolute inset-0 bg-black/55"
@@ -21,7 +20,6 @@ export default function Home() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [username, setUsername] = useState<string | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
-  const [showBugReport, setShowBugReport] = useState(false)
   const router = useRouter()
 
   const supabase = useMemo(() => createClient(), [])
@@ -93,16 +91,6 @@ export default function Home() {
           <UsernameSetup onComplete={setUsername} />
         )}
 
-        {/* Bug report modal */}
-        {showBugReport && <BugReportModal onClose={() => setShowBugReport(false)} />}
-
-        {/* Bug report button — top left */}
-        <button
-          onClick={() => setShowBugReport(true)}
-          className="fixed top-4 left-4 z-40 bg-gray-900/80 hover:bg-gray-800 backdrop-blur border border-gray-700 hover:border-red-700/60 text-gray-400 hover:text-red-400 px-3 py-2 rounded-xl text-xs font-medium transition shadow-lg"
-        >
-          🐛 Report Bug
-        </button>
 
         <div className="relative z-10 text-center max-w-md w-full">
           <SparkleTitle>VeeFriends TCG</SparkleTitle>

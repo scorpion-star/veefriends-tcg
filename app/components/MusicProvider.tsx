@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { isSfxMuted, setSfxMuted } from '@/lib/sfx'
 import CoinIcon from './CoinIcon'
+import BugReportModal from './BugReportModal'
 
 function isGameRoute(p: string) { return /^\/game\//.test(p) }
 
@@ -26,6 +27,7 @@ export default function MusicProvider() {
   })
   const [sfxMuted, setSfxMutedState] = useState(() => isSfxMuted())
   const [coins, setCoins] = useState<number | null>(null)
+  const [showBugReport, setShowBugReport] = useState(false)
 
   // Global button click sound — respects sfxMuted
   useEffect(() => {
@@ -144,7 +146,15 @@ export default function MusicProvider() {
   const sfxIcon = sfxMuted ? '🔕' : '🔔'
 
   return (
+    <>
+    {showBugReport && <BugReportModal onClose={() => setShowBugReport(false)} />}
     <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-end gap-2 px-4 bg-gray-950/90 backdrop-blur-sm border-b border-gray-800/60">
+      <button
+        onClick={() => setShowBugReport(true)}
+        className="mr-auto flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-red-700/60 text-gray-400 hover:text-red-400 px-3 py-1.5 rounded-xl text-xs font-medium transition select-none"
+      >
+        🐛 Report Bug
+      </button>
       {coins !== null && (
         <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-1.5 rounded-xl select-none">
           <CoinIcon size={18} />
@@ -168,5 +178,6 @@ export default function MusicProvider() {
         </button>
       )}
     </div>
+    </>
   )
 }
