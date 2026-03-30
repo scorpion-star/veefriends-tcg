@@ -117,7 +117,6 @@ export default function Home() {
             <p className="text-xl font-bold text-white">
               {username ?? '…'}
             </p>
-            <p className="text-xs text-gray-500">tap photo to change</p>
           </div>
           <div className="space-y-4">
             <button
