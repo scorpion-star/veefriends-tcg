@@ -8,7 +8,7 @@ import AvatarUpload from './components/AvatarUpload'
 import UsernameSetup from './components/UsernameSetup'
 import BugReportModal from './components/BugReportModal'
 
-const BG = "min-h-screen bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat"
+const BG = "min-h-screen relative overflow-hidden"
 const OVERLAY = "absolute inset-0 bg-black/55"
 
 export default function Home() {
@@ -81,7 +81,10 @@ export default function Home() {
   // ── Logged-in home screen ──────────────────────────────────────────────────
   if (user) {
     return (
-      <div className={`${BG} relative flex items-center justify-center text-white p-6`}>
+      <div className={`${BG} flex items-center justify-center text-white p-6`}>
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
+        </div>
         <div className={OVERLAY} />
 
         {/* Username setup gate — shown until user picks a name */}
@@ -155,7 +158,10 @@ export default function Home() {
 
   // ── Login screen ───────────────────────────────────────────────────────────
   return (
-    <div className={`${BG} relative flex items-center justify-center text-white p-6`}>
+    <div className={`${BG} flex items-center justify-center text-white p-6`}>
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
+      </div>
       <div className={OVERLAY} />
       <div className="relative z-10 bg-gray-900/80 backdrop-blur p-10 rounded-3xl w-full max-w-md shadow-2xl border border-gray-800">
         <div className="text-center mb-10">
