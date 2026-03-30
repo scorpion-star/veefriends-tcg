@@ -186,7 +186,7 @@ export default function PlayPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">
+      <div className="flex-1 bg-gray-950 flex items-center justify-center text-white">
         <div className="text-4xl animate-pulse">⚔</div>
       </div>
     )
@@ -195,7 +195,7 @@ export default function PlayPage() {
   // Searching for match overlay
   if (matchStatus === 'queued') {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">
+      <div className="flex-1 bg-gray-950 flex items-center justify-center text-white">
         <div className="text-center">
           <div className="text-6xl mb-6 animate-spin">⚔</div>
           <h2 className="text-3xl font-bold mb-3">Finding Opponent...</h2>
@@ -213,8 +213,8 @@ export default function PlayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <header className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+    <div className="flex-1 flex flex-col bg-gray-950 text-white overflow-hidden min-h-0">
+      <header className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-gray-400 hover:text-white text-sm transition">← Home</Link>
           <span className="text-gray-700">|</span>
@@ -225,7 +225,7 @@ export default function PlayPage() {
         </Link>
       </header>
 
-      <div className="max-w-3xl mx-auto p-8">
+      <div className="flex-1 overflow-y-auto min-h-0"><div className="max-w-3xl mx-auto p-8">
         {/* Step 1: Select deck */}
         <section className="mb-10">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
@@ -385,7 +385,7 @@ export default function PlayPage() {
             )}
           </section>
         )}
-      </div>
+      </div></div>
     </div>
   )
 }

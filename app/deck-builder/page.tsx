@@ -215,7 +215,7 @@ export default function DeckBuilder() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">
+      <div className="flex-1 bg-gray-950 flex items-center justify-center text-white">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">🃏</div>
           <p className="text-gray-400">Loading your collection...</p>
@@ -230,7 +230,7 @@ export default function DeckBuilder() {
   const deckToDelete = savedDecks.find(d => d.id === confirmDeleteId)
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="flex-1 flex flex-col bg-gray-950 text-white overflow-hidden min-h-0">
 
       {/* ── Delete confirmation dialog ── */}
       {confirmDeleteId && (

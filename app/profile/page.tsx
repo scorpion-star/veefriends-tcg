@@ -76,21 +76,21 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="flex-1 bg-gray-950 flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="flex-1 flex flex-col bg-gray-950 text-white overflow-hidden min-h-0">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-4">
+      <header className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-4 shrink-0">
         <Link href="/" className="text-gray-400 hover:text-white transition text-sm">← Back</Link>
         <h1 className="text-xl font-bold">My Profile</h1>
       </header>
 
-      <div className="max-w-lg mx-auto p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto min-h-0"><div className="max-w-lg mx-auto p-8 space-y-8">
 
         {/* Avatar section */}
         <section className="flex flex-col items-center gap-4">
@@ -173,7 +173,7 @@ export default function ProfilePage() {
           </div>
         </section>
 
-      </div>
+      </div></div>
     </div>
   )
 }

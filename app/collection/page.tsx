@@ -166,7 +166,7 @@ export default function Collection() {
   // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="flex-1 bg-gray-950 text-white flex items-center justify-center">
         <div className="text-4xl animate-pulse">🃏</div>
       </div>
     )
@@ -175,7 +175,7 @@ export default function Collection() {
   const totalCards = cards.reduce((sum, c) => sum + c.quantity, 0)
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="flex-1 flex flex-col bg-gray-950 text-white overflow-hidden min-h-0">
 
       {/* ── PACK ANIMATION OVERLAY ── */}
       {anim && (
@@ -299,7 +299,7 @@ export default function Collection() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="flex-1 overflow-y-auto min-h-0"><div className="max-w-6xl mx-auto p-6">
 
         {/* ── PACK OPENER ── */}
         <div className="mb-8">
@@ -411,7 +411,7 @@ export default function Collection() {
             </div>
           </>
         )}
-      </div>
+      </div></div>
     </div>
   )
 }

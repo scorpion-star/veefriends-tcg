@@ -317,7 +317,7 @@ export default function GameRoomPage() {
 
   return (
     <div
-      className="min-h-screen text-white flex flex-col select-none"
+      className="flex-1 flex flex-col text-white overflow-hidden min-h-0 select-none"
       style={{
         background: 'url(/bg.jpg) center/cover fixed, radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #0a0a1a 60%, #000 100%)',
       }}

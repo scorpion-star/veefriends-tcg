@@ -121,7 +121,7 @@ export default function StorePage() {
   const refreshHours = refreshedAt ? hoursUntilRefresh(refreshedAt) : null
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="flex-1 flex flex-col bg-gray-950 text-white overflow-hidden min-h-0">
       <header className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-gray-400 hover:text-white transition text-sm">← Home</Link>
@@ -140,7 +140,7 @@ export default function StorePage() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto p-6 space-y-8">
+      <div className="flex-1 overflow-y-auto min-h-0"><div className="max-w-5xl mx-auto p-6 space-y-8">
 
         {/* Free Coins */}
         <section className="bg-gradient-to-br from-amber-900/40 to-yellow-900/20 border border-amber-700/50 rounded-2xl p-6 flex items-center justify-between gap-6">
@@ -223,7 +223,7 @@ export default function StorePage() {
             )
           })
         )}
-      </div>
+      </div></div>
     </div>
   )
 }
