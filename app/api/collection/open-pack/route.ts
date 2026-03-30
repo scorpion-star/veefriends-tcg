@@ -30,8 +30,22 @@ function pickCards(pool: Card[], count: number): Card[] {
   return picks
 }
 
+// Starter pack: pick unique cards respecting rarity weights, no duplicates
+function pickUniqueCards(pool: Card[], count: number): Card[] {
+  const remaining = [...pool]
+  const picks: Card[] = []
+  const actualCount = Math.min(count, remaining.length)
+  for (let i = 0; i < actualCount; i++) {
+    const pick = weightedPick(remaining)
+    picks.push(pick)
+    const idx = remaining.findIndex(c => c.id === pick.id)
+    if (idx !== -1) remaining.splice(idx, 1)
+  }
+  return picks
+}
+
 const PACK_COOLDOWN_HOURS = 24
-const STARTER_PACK_SIZE = 20
+const STARTER_PACK_SIZE = 30
 const DAILY_PACK_SIZE = 5
 
 export async function POST(req: NextRequest) {
@@ -81,7 +95,9 @@ export async function POST(req: NextRequest) {
   }
 
   const packSize = isStarter ? STARTER_PACK_SIZE : DAILY_PACK_SIZE
-  const picked = pickCards(allCards as Card[], packSize)
+  const picked = isStarter
+    ? pickUniqueCards(allCards as Card[], packSize)
+    : pickCards(allCards as Card[], packSize)
 
   // Upsert into inventory (increment quantity on duplicates)
   // Group by card_id first to handle duplicates in the same pack
