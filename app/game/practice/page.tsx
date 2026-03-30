@@ -762,7 +762,25 @@ export default function PracticePage() {
       >
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 text-center max-w-md">
-          <div className={`text-9xl mb-6 drop-shadow-2xl ${iWon ? 'animate-bounce' : ''}`}>{iWon ? '🏆' : '🤖'}</div>
+          {iWon ? (
+            <div className="mb-6 flex justify-center">
+              <img
+                src="/win-screen.png"
+                alt="Victory"
+                className="w-64 h-64 object-contain drop-shadow-2xl animate-bounce"
+                onError={e => {
+                  const el = e.currentTarget
+                  el.style.display = 'none'
+                  const fallback = document.createElement('div')
+                  fallback.className = 'text-9xl drop-shadow-2xl animate-bounce'
+                  fallback.textContent = '🏆'
+                  el.parentNode?.appendChild(fallback)
+                }}
+              />
+            </div>
+          ) : (
+            <div className="text-9xl mb-6 drop-shadow-2xl">🤖</div>
+          )}
           <h1 className={`text-6xl font-black mb-3 ${iWon ? 'text-yellow-300 drop-shadow-[0_0_30px_rgba(253,224,71,0.6)]' : 'text-gray-300'}`}>{iWon ? 'You Won!' : 'CPU Wins'}</h1>
           <p className="text-gray-400 mb-2">
             vs CPU {DIFFICULTY_LABEL[difficulty]}
