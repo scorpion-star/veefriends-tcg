@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { isSfxMuted, setSfxMuted } from '@/lib/sfx'
+import CoinIcon from './CoinIcon'
 
 function isGameRoute(p: string) { return /^\/game\//.test(p) }
 
@@ -146,7 +147,7 @@ export default function MusicProvider() {
     <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
       {coins !== null && (
         <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-2 rounded-2xl select-none">
-          <span className="text-base leading-none">🪙</span>
+          <CoinIcon size={20} />
           <span className="text-amber-300 font-bold text-sm">{coins}</span>
         </div>
       )}

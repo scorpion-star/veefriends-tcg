@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Outer rim -->
+  <circle cx="32" cy="32" r="30" fill="#b8860b"/>
+  <!-- Main coin face -->
+  <circle cx="32" cy="32" r="26" fill="#ffd700"/>
+  <!-- Inner ring -->
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#f0a500" stroke-width="2"/>
+  <!-- Star symbol -->
+  <polygon points="32,14 35.5,24.5 47,24.5 37.5,31 41,41.5 32,35 23,41.5 26.5,31 17,24.5 28.5,24.5" fill="#f0a500"/>
+  <!-- Shine highlight -->
+  <ellipse cx="22" cy="20" rx="6" ry="4" fill="rgba(255,255,255,0.35)" transform="rotate(-30 22 20)"/>
+</svg>
