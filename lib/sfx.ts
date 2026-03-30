@@ -10,7 +10,18 @@ function getAudio(path: string): HTMLAudioElement {
   return cache[path]
 }
 
+export function isSfxMuted(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem('sfxMuted') === 'true'
+}
+
+export function setSfxMuted(muted: boolean) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('sfxMuted', String(muted))
+}
+
 export function playSfx(path: string, volume = 0.7) {
+  if (isSfxMuted()) return
   try {
     const base = getAudio(path)
     const sfx = base.cloneNode() as HTMLAudioElement

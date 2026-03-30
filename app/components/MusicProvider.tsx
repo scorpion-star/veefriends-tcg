@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { isSfxMuted, setSfxMuted } from '@/lib/sfx'
 
 // Music plays on home, collection, deck-builder, play (lobby)
 // Stops when inside an actual game match: /game/[gameId] or /game/practice
@@ -23,13 +24,15 @@ export default function MusicProvider() {
     }
     return false
   })
+  const [sfxMuted, setSfxMutedState] = useState(() => isSfxMuted())
 
-  // Global button click sound
+  // Global button click sound — respects sfxMuted
   useEffect(() => {
     const clickAudio = new Audio('/sounds/click.mp3')
     clickAudio.volume = 0.5
 
     const handleClick = (e: MouseEvent) => {
+      if (isSfxMuted()) return
       const target = e.target as HTMLElement
       if (target.closest('button')) {
         const sfx = clickAudio.cloneNode() as HTMLAudioElement
@@ -53,7 +56,7 @@ export default function MusicProvider() {
     return () => listener.subscription.unsubscribe()
   }, [supabase])
 
-  // Start / stop audio based on login + route
+  // Start / stop music based on login + route
   useEffect(() => {
     const shouldPlay = loggedIn && !isGameRoute(pathname)
 
@@ -73,7 +76,6 @@ export default function MusicProvider() {
 
         tryPlay()
 
-        // If autoplay was blocked, start on first user interaction
         const onInteraction = () => {
           if (!audioRef.current) return
           audioRef.current.play()
@@ -121,18 +123,35 @@ export default function MusicProvider() {
     localStorage.setItem('menuMusicMuted', String(next))
   }, [musicPlaying, muted])
 
-  // Don't render button on game routes or when not logged in
-  if (!loggedIn || isGameRoute(pathname)) return null
+  const toggleSfx = useCallback(() => {
+    const next = !sfxMuted
+    setSfxMuted(next)
+    setSfxMutedState(next)
+  }, [sfxMuted])
+
+  if (!loggedIn) return null
 
   const musicIcon = !musicPlaying ? '▶' : muted ? '🔇' : '🔊'
+  const sfxIcon = sfxMuted ? '🔕' : '🔔'
 
   return (
-    <button
-      onClick={toggleMusic}
-      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-gray-900/80 backdrop-blur border border-gray-700 hover:border-amber-600/60 px-4 py-2.5 rounded-2xl text-sm font-medium text-gray-300 hover:text-white transition-all hover:shadow-md hover:shadow-amber-900/20 select-none"
-    >
-      <span className="text-base leading-none">{musicIcon}</span>
-      <span>Music</span>
-    </button>
+    <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <button
+        onClick={toggleSfx}
+        className="flex items-center gap-2 bg-gray-900/80 backdrop-blur border border-gray-700 hover:border-amber-600/60 px-3 py-2 rounded-2xl text-sm font-medium text-gray-300 hover:text-white transition-all hover:shadow-md hover:shadow-amber-900/20 select-none"
+      >
+        <span className="text-base leading-none">{sfxIcon}</span>
+        <span>SFX</span>
+      </button>
+      {!isGameRoute(pathname) && (
+        <button
+          onClick={toggleMusic}
+          className="flex items-center gap-2 bg-gray-900/80 backdrop-blur border border-gray-700 hover:border-amber-600/60 px-3 py-2 rounded-2xl text-sm font-medium text-gray-300 hover:text-white transition-all hover:shadow-md hover:shadow-amber-900/20 select-none"
+        >
+          <span className="text-base leading-none">{musicIcon}</span>
+          <span>Music</span>
+        </button>
+      )}
+    </div>
   )
 }
