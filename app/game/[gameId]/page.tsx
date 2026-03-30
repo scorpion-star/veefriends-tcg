@@ -67,7 +67,8 @@ export default function GameRoomPage() {
   useEffect(() => {
     if (!loading && !matchStartPlayedRef.current) {
       matchStartPlayedRef.current = true
-      SFX.matchStart()
+      // Small delay gives browser time to settle after the loading transition
+      setTimeout(() => SFX.matchStart(), 100)
     }
   }, [loading])
 

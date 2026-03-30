@@ -624,12 +624,12 @@ export default function PracticePage() {
       lastRound: null,
     }
 
+    SFX.matchStart()
     setShuffling(true)
     setTimeout(() => {
       setGameState(pendingStateRef.current)
       pendingStateRef.current = null
       setShuffling(false)
-      SFX.matchStart()
     }, 2400)
   }
 
