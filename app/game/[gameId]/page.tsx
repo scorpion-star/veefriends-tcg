@@ -10,7 +10,6 @@ import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
 import CardStats from '@/app/components/CardStats'
 import { PlayerScoreRow, TieBankSidebar } from '@/app/components/GemBoard'
-import AvatarUpload from '@/app/components/AvatarUpload'
 
 const RARITY_BORDER: Record<string, string> = {
   Core: 'border-yellow-500',
@@ -602,15 +601,12 @@ export default function GameRoomPage() {
           />
           <div className="p-3">
             <div className="flex items-center gap-2 mb-1">
-              {myUserId && (
-                <AvatarUpload
-                  userId={myUserId}
-                  avatarUrl={avatarUrl}
-                  email={myEmail}
-                  size="sm"
-                  onUpload={setAvatarUrl}
-                />
-              )}
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-600 bg-gray-800 shrink-0 flex items-center justify-center">
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="You" className="w-full h-full object-cover" />
+                  : <span className="text-xs font-bold text-gray-400">{myUsername.slice(0,2).toUpperCase() || '?'}</span>
+                }
+              </div>
               <p className="text-[32px] font-bold text-white break-words leading-tight">{myCard.name}</p>
             </div>
             <p className="text-2xl text-gray-500 mb-2.5">{myCard.rarity} · {me ? `${me.deck.length} left` : ''}</p>

@@ -9,7 +9,6 @@ import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
 import CardStats from '@/app/components/CardStats'
 import { PlayerScoreRow, TieBankSidebar } from '@/app/components/GemBoard'
-import AvatarUpload from '@/app/components/AvatarUpload'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -359,7 +358,7 @@ export default function PracticePage() {
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [loadingSetup, setLoadingSetup] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
+
   const [userEmail, setUserEmail] = useState<string>('')
   const [username, setUsername] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
@@ -381,7 +380,6 @@ export default function PracticePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/'); return }
 
-      setUserId(user.id)
       setUserEmail(user.email ?? '')
 
       const [{ data: decks }, { data: cards }, { data: profile }] = await Promise.all([
@@ -1108,15 +1106,12 @@ export default function PracticePage() {
           />
           <div className="p-3">
             <div className="flex items-center gap-2 mb-1">
-              {userId && (
-                <AvatarUpload
-                  userId={userId}
-                  avatarUrl={avatarUrl}
-                  email={userEmail}
-                  size="sm"
-                  onUpload={setAvatarUrl}
-                />
-              )}
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-600 bg-gray-800 shrink-0 flex items-center justify-center">
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="You" className="w-full h-full object-cover" />
+                  : <span className="text-xs font-bold text-gray-400">{username?.slice(0,2).toUpperCase() || '?'}</span>
+                }
+              </div>
               <p className="text-[32px] font-bold text-white break-words leading-tight">{myCard.name}</p>
             </div>
             <p className="text-2xl text-gray-500 mb-2.5">{myCard.rarity} · {gameState.human.deck.length} left</p>
