@@ -33,8 +33,15 @@ export function playSfx(path: string, volume = 0.7) {
 }
 
 function playSfxRandom(paths: string[], volume = 0.7) {
+  if (isSfxMuted()) return
   const path = paths[Math.floor(Math.random() * paths.length)]
-  playSfx(path, volume)
+  try {
+    const sfx = new Audio(path)
+    sfx.volume = volume
+    sfx.play().catch(() => {})
+  } catch {
+    // silently ignore
+  }
 }
 
 export const SFX = {
