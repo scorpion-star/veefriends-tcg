@@ -754,7 +754,7 @@ export default function PracticePage() {
               <img
                 src="/win-screen.png"
                 alt="Victory"
-                className="w-64 h-64 object-contain drop-shadow-2xl animate-bounce"
+                className="w-64 h-64 object-contain drop-shadow-2xl animate-bounce-3s"
                 onError={e => {
                   const el = e.currentTarget
                   el.style.display = 'none'
