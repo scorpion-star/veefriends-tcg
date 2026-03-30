@@ -32,9 +32,14 @@ export function playSfx(path: string, volume = 0.7) {
   }
 }
 
+function playSfxRandom(paths: string[], volume = 0.7) {
+  const path = paths[Math.floor(Math.random() * paths.length)]
+  playSfx(path, volume)
+}
+
 export const SFX = {
-  roundWin:    () => playSfx('/sounds/round-win.mp3'),
-  roundLose:   () => playSfx('/sounds/round-lose.mp3'),
+  roundWin:    () => playSfxRandom(['/sounds/round-win-1.mp3', '/sounds/round-win-2.mp3', '/sounds/round-win-3.mp3']),
+  roundLose:   () => playSfxRandom(['/sounds/round-lose-1.mp3', '/sounds/round-lose-2.mp3', '/sounds/round-lose-3.mp3']),
   click:       () => playSfx('/sounds/click.mp3', 0.5),
   matchStart:  () => playSfx('/sounds/match-start.mp3', 0.8),
   tie:         () => playSfx('/sounds/tie.mp3', 0.7),
