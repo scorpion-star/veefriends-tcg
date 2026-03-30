@@ -256,6 +256,7 @@ export default function GameRoomPage() {
       })
       const data = await res.json()
       if (!res.ok) setError(data.error || 'Action failed')
+      else if (data.gameState) setSession(prev => prev ? { ...prev, game_state: data.gameState } : prev)
     } finally {
       setActing(false)
     }
