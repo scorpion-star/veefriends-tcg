@@ -484,7 +484,7 @@ export default function GameRoomPage() {
         )}
 
         {/* ── ACTION PANEL — flex-1 fills center ── */}
-        <div className="flex-1 min-h-0 bg-black/50 backdrop-blur border border-amber-900/40 rounded-2xl p-2 shadow-lg shadow-black/40 flex items-center justify-center">
+        <div className="flex-1 min-h-0 max-h-[35vh] bg-black/50 backdrop-blur border border-amber-900/40 rounded-2xl p-2 shadow-lg shadow-black/40 flex items-center justify-center">
           {state.phase === 'challenge' && isAttacker && (
             <div>
               <p className="text-base text-gray-400 mb-1 text-center">

@@ -75,7 +75,7 @@ function ScoreCircle({ attrKey, value }: { attrKey: AttrKey; value: number }) {
       <div
         style={{ borderStyle: 'dashed' }}
         className={`
-          w-24 h-24 rounded-full border-[3px] flex flex-col items-center justify-center
+          w-[125px] h-[125px] rounded-full border-[3px] flex flex-col items-center justify-center
           transition-all duration-300 shadow-lg select-none
           ${hasScore ? cfg.active : cfg.idle}
           ${isMax ? `ring-4 ring-offset-2 ring-offset-black ${cfg.ring}` : ''}
