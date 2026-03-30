@@ -83,7 +83,7 @@ export default function Home() {
     return (
       <div className={`${BG} flex items-center justify-center text-white p-6`}>
         <div className="absolute inset-0 overflow-hidden">
-          <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
+          <img src="/bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover bg-ken-burns" />
         </div>
         <div className={OVERLAY} />
 

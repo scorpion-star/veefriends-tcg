@@ -98,15 +98,16 @@ body {
 
 /* ── Main menu background Ken Burns ───────────────────────────────────────── */
 @keyframes ken-burns {
-  0%   { transform: scale(1)    translateX(0%)    translateY(0%); }
-  25%  { transform: scale(1.08) translateX(-1.5%) translateY(-1%); }
-  50%  { transform: scale(1.12) translateX(1%)    translateY(-2%); }
-  75%  { transform: scale(1.08) translateX(-1%)   translateY(1%); }
-  100% { transform: scale(1)    translateX(0%)    translateY(0%); }
+  0%   { transform: scale(1)    translate(0%,    0%); }
+  25%  { transform: scale(1.12) translate(-2%,  -1%); }
+  50%  { transform: scale(1.18) translate(1.5%, -2%); }
+  75%  { transform: scale(1.12) translate(-1%,   1%); }
+  100% { transform: scale(1)    translate(0%,    0%); }
 }
 .bg-ken-burns {
   animation: ken-burns 20s ease-in-out infinite;
   transform-origin: center center;
+  will-change: transform;
 }
 
 /* ── Main menu title ───────────────────────────────────────────────────────── */
