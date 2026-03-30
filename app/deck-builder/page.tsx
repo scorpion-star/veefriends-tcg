@@ -118,14 +118,20 @@ export default function DeckBuilder() {
   const filteredCollection = useMemo(() => {
     const min = minScore !== '' ? Number(minScore) : null
     const max = maxScore !== '' ? Number(maxScore) : null
-    return collection.filter(c => {
+    const filtered = collection.filter(c => {
       const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase())
       const matchesRarity = rarityFilter === 'All' || c.rarity === rarityFilter
       const matchesMin = min === null || c.total_score >= min
       const matchesMax = max === null || c.total_score <= max
       return matchesSearch && matchesRarity && matchesMin && matchesMax
     })
-  }, [collection, search, rarityFilter, minScore, maxScore])
+    // Push already-added cards to the bottom
+    return filtered.sort((a, b) => {
+      const aIn = deckCardIds.includes(a.id) ? 1 : 0
+      const bIn = deckCardIds.includes(b.id) ? 1 : 0
+      return aIn - bIn
+    })
+  }, [collection, deckCardIds, search, rarityFilter, minScore, maxScore])
 
   function addCard(card: Card) {
     if (deckCardIds.includes(card.id)) return
@@ -379,7 +385,7 @@ export default function DeckBuilder() {
                       ? 'bg-gray-900 border-gray-800 opacity-40 cursor-not-allowed'
                       : deckFull
                       ? 'bg-gray-800 border-gray-700 opacity-60 cursor-not-allowed'
-                      : `bg-gray-800 border-gray-700 hover:border-blue-500 hover:bg-gray-700 active:scale-95`
+                      : 'bg-gray-800 border-gray-700 hover:border-blue-500 hover:bg-gray-700 active:scale-95'
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-lg overflow-hidden shrink-0 border ${RARITY_BORDER[card.rarity]}`}>
@@ -395,9 +401,6 @@ export default function DeckBuilder() {
                       <CardStats totalScore={card.total_score} aura={card.aura} skill={card.skill} stamina={card.stamina} size="sm" />
                     </div>
                   </div>
-                  {inDeck && (
-                    <span className="text-blue-500 text-xs shrink-0">✓</span>
-                  )}
                 </button>
               )
             })}
