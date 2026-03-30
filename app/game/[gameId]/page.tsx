@@ -51,6 +51,7 @@ export default function GameRoomPage() {
   const [session, setSession] = useState<GameSession | null>(null)
   const [myUserId, setMyUserId] = useState<string | null>(null)
   const [myEmail, setMyEmail] = useState<string>('')
+  const [myUsername, setMyUsername] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [opponentAvatarUrl, setOpponentAvatarUrl] = useState<string | null>(null)
   const [opponentUsername, setOpponentUsername] = useState<string>('')
@@ -88,9 +89,10 @@ export default function GameRoomPage() {
 
       const [{ data: game }, { data: profile }] = await Promise.all([
         supabase.from('game_sessions').select('*').eq('id', gameId).single(),
-        supabase.from('user_profiles').select('avatar_url').eq('user_id', user.id).single(),
+        supabase.from('user_profiles').select('avatar_url, username').eq('user_id', user.id).single(),
       ])
       if (profile?.avatar_url) setAvatarUrl(profile.avatar_url)
+      if (profile?.username) setMyUsername(profile.username)
 
       if (!game) { router.push('/play'); return }
 
@@ -252,7 +254,7 @@ export default function GameRoomPage() {
 
   const myCard = me?.currentCard ? cardMap[me.currentCard] : null
   const theirCard = them?.currentCard ? cardMap[them.currentCard] : null
-  const opponentLabel = session ? (opponent === 'player1' ? session.player1_email : session.player2_email) : 'Opponent'
+  const opponentLabel = opponentUsername || 'Opponent'
 
   const revealMyCard = state.lastRound ? cardMap[myKey === 'player1' ? state.lastRound.p1CardId : state.lastRound.p2CardId] : null
   const revealTheirCard = state.lastRound ? cardMap[myKey === 'player1' ? state.lastRound.p2CardId : state.lastRound.p1CardId] : null
@@ -360,7 +362,7 @@ export default function GameRoomPage() {
               </div>
 
               <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2 font-medium">{opponentLabel.split('@')[0]}</p>
+                <p className="text-sm text-gray-400 mb-2 font-medium">{opponentLabel}</p>
                 <div className={`w-44 rounded-2xl border-2 overflow-hidden shadow-xl ${revealTheirCard ? RARITY_BORDER[revealTheirCard.rarity] : 'border-gray-700'} bg-gray-900 ${!revealIWon && !revealTied ? 'shadow-green-500/30' : ''}`}>
                   {revealTheirCard?.image_url && (
                     <img src={revealTheirCard.image_url} alt={revealTheirCard.name} className="w-full h-36 object-cover" />
@@ -418,7 +420,7 @@ export default function GameRoomPage() {
             <span className="text-gray-600 text-xs border border-gray-700 px-2 py-0.5 rounded-full">Sprint Token used</span>
           )}
         </div>
-        <div className="text-gray-600 text-xs font-mono truncate max-w-48">{gameId.slice(0, 8)}…</div>
+        <div className="text-gray-400 text-sm font-semibold">{myUsername || myEmail.split('@')[0]}</div>
       </header>
 
       {/* ── FIXED LEFT: Tie bank ── */}
@@ -436,13 +438,13 @@ export default function GameRoomPage() {
               <img src={opponentAvatarUrl} alt="Opponent" className="w-full h-full object-cover" />
             ) : (
               <span className="text-3xl font-black text-gray-500">
-                {(opponentUsername || opponentLabel).slice(0, 2).toUpperCase()}
+                {opponentLabel.slice(0, 2).toUpperCase()}
               </span>
             )}
           </div>
           <div className="min-w-0">
             <p className="text-lg font-bold text-gray-200 truncate">
-              {opponentUsername || opponentLabel.split('@')[0]}
+              {opponentLabel}
             </p>
             <p className="text-sm text-gray-500">{them ? `${them.deck.length} cards left` : ''}</p>
           </div>
