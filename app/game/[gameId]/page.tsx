@@ -192,7 +192,11 @@ export default function GameRoomPage() {
           const nextTurn = (data as GameSession).game_state?.turn
           const prevPhase = prev.game_state?.phase
           const nextPhase = (data as GameSession).game_state?.phase
-          if (prevTurn !== nextTurn || prevPhase !== nextPhase) return data as GameSession
+          const prevDefender = prev.game_state?.currentRound?.currentDefender
+          const nextDefender = (data as GameSession).game_state?.currentRound?.currentDefender
+          const prevAttr = prev.game_state?.currentRound?.attribute
+          const nextAttr = (data as GameSession).game_state?.currentRound?.attribute
+          if (prevTurn !== nextTurn || prevPhase !== nextPhase || prevDefender !== nextDefender || prevAttr !== nextAttr) return data as GameSession
           return prev
         })
       }
@@ -262,7 +266,6 @@ export default function GameRoomPage() {
   }
 
   const myCard = me?.currentCard ? cardMap[me.currentCard] : null
-  const theirCard = them?.currentCard ? cardMap[them.currentCard] : null
   const opponentLabel = opponentUsername || 'Opponent'
 
   const revealMyCard = state.lastRound ? cardMap[myKey === 'player1' ? state.lastRound.p1CardId : state.lastRound.p2CardId] : null
