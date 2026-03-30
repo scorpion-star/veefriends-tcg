@@ -256,7 +256,6 @@ function cpuDecide(
   cardMap: Record<number, Card>,
 ): CpuDecision {
   const cpuCard = state.cpu.currentCard ? cardMap[state.cpu.currentCard] : null
-  const humanCard = state.human.currentCard ? cardMap[state.human.currentCard] : null
   if (!cpuCard) return { type: 'accept' }
 
   const available = (['aura', 'skill', 'stamina'] as Attribute[]).filter(
@@ -269,15 +268,12 @@ function cpuDecide(
     // Sprint logic — CPU card must be Rare or higher to use Sprint Token
     if (!state.sprintUsed.cpu && cpuCard.rarity !== 'Core') {
       const cpuSprint = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
-      const humanSprint = humanCard
-        ? Math.round(humanCard.total_score * RARITY_MULTIPLIER[humanCard.rarity])
-        : 0
 
-      if (difficulty === 'hard' && humanCard) {
-        // Use sprint if CPU wins it AND human is ahead overall
+      if (difficulty === 'hard') {
+        // Sprint if CPU's sprint score is decent and human is ahead on the board
         const cpuBest = Math.max(...Object.values(state.cpu.points))
         const humanBest = Math.max(...Object.values(state.human.points))
-        if (cpuSprint > humanSprint && humanBest > cpuBest + 2) return { type: 'sprint' }
+        if (cpuSprint >= 8 && humanBest > cpuBest + 2) return { type: 'sprint' }
       } else if (difficulty === 'medium') {
         const cpuBest = Math.max(...Object.values(state.cpu.points))
         const humanBest = Math.max(...Object.values(state.human.points))
@@ -296,26 +292,26 @@ function cpuDecide(
       return { type: 'challenge', attribute: best }
     }
 
-    // Hard — pick attribute with biggest advantage over human (omniscient)
-    if (humanCard) {
-      const best = available.reduce((a, b) => {
-        const advA = cpuCard[a] - humanCard[a]
-        const advB = cpuCard[b] - humanCard[b]
-        return advA >= advB ? a : b
-      }, fallback)
+    // Hard — pick own best attribute, biased toward the weakest score category on the board
+    {
+      const pts = state.cpu.points
+      const weakest = (['aura', 'skill', 'stamina'] as Attribute[])
+        .filter(a => available.includes(a))
+        .sort((a, b) => pts[a] - pts[b])[0]
+      // If weakest category is 2+ behind human, prioritise recovering it if CPU is strong there
+      const humanPts = state.human.points
+      const shouldRecover = weakest && humanPts[weakest] - pts[weakest] >= 2 && cpuCard[weakest] >= 6
+      const best = shouldRecover
+        ? weakest
+        : available.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, fallback)
       return { type: 'challenge', attribute: best }
     }
-
-    const best = available.reduce((a, b) =>
-      cpuCard[a] >= cpuCard[b] ? a : b, fallback)
-    return { type: 'challenge', attribute: best }
   }
 
   // ── CPU is DEFENDING ──────────────────────────────────────────
   if (state.phase === 'defense' && state.currentRound.currentDefender === 'cpu') {
     const attr = state.currentRound.attribute!
     const cpuVal = cpuCard[attr]
-    const humanVal = humanCard ? humanCard[attr] : 0
     const declined = state.currentRound.declinedAttributes
     const availableCounter = (['aura', 'skill', 'stamina'] as Attribute[]).filter(
       a => a !== attr && !declined.includes(a)
@@ -331,15 +327,10 @@ function cpuDecide(
       return { type: 'decline', counterAttribute: counter }
     }
 
-    // Hard — omniscient: accept only if CPU wins
-    if (cpuVal >= humanVal) return { type: 'accept' }
+    // Hard — accept if CPU's value is strong (≥6), otherwise counter with own best
+    if (cpuVal >= 6) return { type: 'accept' }
     if (isLastDecline) return { type: 'decline', counterAttribute: null }
-    // Pick the counter attribute where CPU has the biggest advantage
-    const counter = availableCounter.reduce((a, b) => {
-      const advA = cpuCard[a] - (humanCard ? humanCard[a] : 0)
-      const advB = cpuCard[b] - (humanCard ? humanCard[b] : 0)
-      return advA >= advB ? a : b
-    }, availableCounter[0])
+    const counter = availableCounter.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, availableCounter[0])
     return { type: 'decline', counterAttribute: counter }
   }
 
@@ -888,7 +879,7 @@ export default function PracticePage() {
                     <img src={revealHumanCard.image_url} alt={revealHumanCard.name} className="w-full h-36 object-cover" />
                   )}
                   <div className="p-3 text-center">
-                    <p className="text-sm font-bold truncate mb-1">{revealHumanCard?.name}</p>
+                    <p className="text-sm font-bold break-words leading-tight mb-1">{revealHumanCard?.name}</p>
                     {gameState.lastRound.attribute !== 'sprint' && (
                       <p className={`text-2xl font-black ${ATTR_COLOR[gameState.lastRound.attribute]}`}>
                         {gameState.lastRound.humanValue}
@@ -918,7 +909,7 @@ export default function PracticePage() {
                     <img src={revealCpuCard.image_url} alt={revealCpuCard.name} className="w-full h-36 object-cover" />
                   )}
                   <div className="p-3 text-center">
-                    <p className="text-sm font-bold truncate mb-1">{revealCpuCard?.name}</p>
+                    <p className="text-sm font-bold break-words leading-tight mb-1">{revealCpuCard?.name}</p>
                     {gameState.lastRound.attribute !== 'sprint' && (
                       <p className={`text-2xl font-black ${ATTR_COLOR[gameState.lastRound.attribute]}`}>
                         {gameState.lastRound.cpuValue}

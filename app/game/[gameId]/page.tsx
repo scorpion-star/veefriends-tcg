@@ -335,7 +335,7 @@ export default function GameRoomPage() {
                     <img src={revealMyCard.image_url} alt={revealMyCard.name} className="w-full h-36 object-cover" />
                   )}
                   <div className="p-3 text-center">
-                    <p className="text-sm font-bold truncate mb-1">{revealMyCard?.name}</p>
+                    <p className="text-sm font-bold break-words leading-tight mb-1">{revealMyCard?.name}</p>
                     {state.lastRound.attribute === 'sprint'
                       ? <p className="text-2xl font-black text-yellow-400">⚡ {revealMyVal}</p>
                       : <p className={`text-2xl font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealMyVal}</p>
@@ -360,7 +360,7 @@ export default function GameRoomPage() {
                     <img src={revealTheirCard.image_url} alt={revealTheirCard.name} className="w-full h-36 object-cover" />
                   )}
                   <div className="p-3 text-center">
-                    <p className="text-sm font-bold truncate mb-1">{revealTheirCard?.name}</p>
+                    <p className="text-sm font-bold break-words leading-tight mb-1">{revealTheirCard?.name}</p>
                     {state.lastRound.attribute === 'sprint'
                       ? <p className="text-2xl font-black text-yellow-400">⚡ {revealTheirVal}</p>
                       : <p className={`text-2xl font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealTheirVal}</p>
