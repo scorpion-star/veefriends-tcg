@@ -71,11 +71,11 @@ export default function AvatarUpload({
       }`}
       onClick={() => !readOnly && !uploading && inputRef.current?.click()}
     >
-      {displayUrl ? (
-        <img src={displayUrl} alt="Avatar" className="w-full h-full object-cover" />
-      ) : (
-        <span>{initials}</span>
-      )}
+      <img
+        src={displayUrl ?? '/card-back.png'}
+        alt="Avatar"
+        className="w-full h-full object-cover"
+      />
 
       {!readOnly && (
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-full">
