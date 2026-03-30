@@ -358,7 +358,6 @@ export default function PracticePage() {
   const [gameState, setGameState] = useState<PracticeState | null>(null)
   const [cardMap, setCardMap] = useState<Record<number, Card>>({})
   const [cpuThinking, setCpuThinking] = useState(false)
-  const [acting, setActing] = useState(false)
   const [isRevealing, setIsRevealing] = useState(false)
   const [shuffling, setShuffling] = useState(false)
   const pendingStateRef = useRef<PracticeState | null>(null)
@@ -504,7 +503,6 @@ export default function PracticePage() {
 
   // Human actions
   function humanChallenge(attribute: Attribute) {
-    if (acting) return
     setGameState(prev => {
       if (!prev || prev.phase !== 'challenge' || prev.attacker !== 'human') return prev
       return {
@@ -516,7 +514,6 @@ export default function PracticePage() {
   }
 
   function humanSprint() {
-    if (acting) return
     setGameState(prev => {
       if (!prev || prev.sprintUsed.human) return prev
       // Allow sprint when human is attacking (challenge phase) or is the current defender
@@ -542,7 +539,6 @@ export default function PracticePage() {
   }
 
   function humanAccept() {
-    if (acting) return
     setGameState(prev => {
       if (!prev || prev.phase !== 'defense' || prev.currentRound.currentDefender !== 'human') return prev
       const attr = prev.currentRound.attribute!
@@ -560,7 +556,6 @@ export default function PracticePage() {
   }
 
   function humanDecline(counterAttr: Attribute | null) {
-    if (acting) return
     setGameState(prev => {
       if (!prev || prev.phase !== 'defense' || prev.currentRound.currentDefender !== 'human') return prev
       const attr = prev.currentRound.attribute!
@@ -634,6 +629,7 @@ export default function PracticePage() {
       setGameState(pendingStateRef.current)
       pendingStateRef.current = null
       setShuffling(false)
+      SFX.matchStart()
     }, 2400)
   }
 

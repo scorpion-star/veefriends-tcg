@@ -62,6 +62,14 @@ export default function GameRoomPage() {
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevResKeyRef = useRef<number>(-1)
   const cardMapRef = useRef<Record<number, Card>>({})
+  const matchStartPlayedRef = useRef(false)
+
+  useEffect(() => {
+    if (!loading && !matchStartPlayedRef.current) {
+      matchStartPlayedRef.current = true
+      SFX.matchStart()
+    }
+  }, [loading])
 
   // Determine role
   const myKey: PlayerKey | null = useMemo(() => {
