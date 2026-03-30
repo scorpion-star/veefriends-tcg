@@ -37,4 +37,5 @@ export const SFX = {
   roundLose:   () => playSfx('/sounds/round-lose.mp3'),
   click:       () => playSfx('/sounds/click.mp3', 0.5),
   matchStart:  () => playSfx('/sounds/match-start.mp3', 0.8),
+  tie:         () => playSfx('/sounds/tie.mp3', 0.7),
 }

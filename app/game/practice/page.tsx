@@ -401,8 +401,9 @@ export default function PracticePage() {
       if (revealTimerRef.current) clearTimeout(revealTimerRef.current)
       setIsRevealing(true)
       revealTimerRef.current = setTimeout(() => setIsRevealing(false), 2000)
-      if (gameState.lastRound && gameState.lastRound.winner !== 'tie') {
-        gameState.lastRound.winner === 'human' ? SFX.roundWin() : SFX.roundLose()
+      if (gameState.lastRound) {
+        if (gameState.lastRound.winner === 'tie') SFX.tie()
+        else gameState.lastRound.winner === 'human' ? SFX.roundWin() : SFX.roundLose()
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

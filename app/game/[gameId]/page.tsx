@@ -163,8 +163,9 @@ export default function GameRoomPage() {
       if (revealTimerRef.current) clearTimeout(revealTimerRef.current)
       setIsRevealing(true)
       revealTimerRef.current = setTimeout(() => setIsRevealing(false), 2000)
-      if (state.lastRound && state.lastRound.winner !== 'tie') {
-        state.lastRound.winner === myKey ? SFX.roundWin() : SFX.roundLose()
+      if (state.lastRound) {
+        if (state.lastRound.winner === 'tie') SFX.tie()
+        else state.lastRound.winner === myKey ? SFX.roundWin() : SFX.roundLose()
       }
     }
   }, [state?.turn, state?.currentRound.tieCount]) // eslint-disable-line react-hooks/exhaustive-deps
