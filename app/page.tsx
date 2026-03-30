@@ -139,6 +139,12 @@ export default function Home() {
               📦 My Collection
             </button>
             <button
+              onClick={() => router.push('/store')}
+              className="w-full bg-gray-900/70 hover:bg-gray-800/80 backdrop-blur border border-gray-700 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20 py-4 rounded-2xl text-lg font-medium transition"
+            >
+              🪙 Store
+            </button>
+            <button
               onClick={() => router.push('/profile')}
               className="w-full bg-gray-900/70 hover:bg-gray-800/80 backdrop-blur border border-gray-700 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20 py-4 rounded-2xl text-lg font-medium transition"
             >

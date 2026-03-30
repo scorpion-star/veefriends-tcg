@@ -5,11 +5,10 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { isSfxMuted, setSfxMuted } from '@/lib/sfx'
 
+function isGameRoute(p: string) { return /^\/game\//.test(p) }
+
 // Music plays on home, collection, deck-builder, play (lobby)
 // Stops when inside an actual game match: /game/[gameId] or /game/practice
-function isGameRoute(pathname: string) {
-  return /^\/game\//.test(pathname)
-}
 
 export default function MusicProvider() {
   const pathname = usePathname()
@@ -25,6 +24,7 @@ export default function MusicProvider() {
     return false
   })
   const [sfxMuted, setSfxMutedState] = useState(() => isSfxMuted())
+  const [coins, setCoins] = useState<number | null>(null)
 
   // Global button click sound — respects sfxMuted
   useEffect(() => {
@@ -55,6 +55,14 @@ export default function MusicProvider() {
     })
     return () => listener.subscription.unsubscribe()
   }, [supabase])
+
+  // Load coin balance
+  useEffect(() => {
+    if (!loggedIn) { setCoins(null); return }
+    fetch('/api/coins/status').then(r => r.ok ? r.json() : null).then(d => {
+      if (d) setCoins(d.coins)
+    })
+  }, [loggedIn, pathname])
 
   // Start / stop music based on login + route
   useEffect(() => {
@@ -136,6 +144,12 @@ export default function MusicProvider() {
 
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      {coins !== null && (
+        <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-2 rounded-2xl select-none">
+          <span className="text-base leading-none">🪙</span>
+          <span className="text-amber-300 font-bold text-sm">{coins}</span>
+        </div>
+      )}
       <button
         onClick={toggleSfx}
         className="flex items-center gap-2 bg-gray-900/80 backdrop-blur border border-gray-700 hover:border-amber-600/60 px-3 py-2 rounded-2xl text-sm font-medium text-gray-300 hover:text-white transition-all hover:shadow-md hover:shadow-amber-900/20 select-none"
