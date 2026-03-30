@@ -241,14 +241,7 @@ export default function GameRoomPage() {
   }, [acting, gameId])
 
   if (loading || !state || !myKey) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Loading game…</p>
-        </div>
-      </div>
-    )
+    return <ShuffleOverlay />
   }
 
   const myCard = me?.currentCard ? cardMap[me.currentCard] : null
@@ -615,6 +608,40 @@ export default function GameRoomPage() {
         </div>
       )}
 
+    </div>
+  )
+}
+
+function ShuffleOverlay() {
+  const cards = [
+    { tx: -100, tr: -22 },
+    { tx: -52,  tr: -11 },
+    { tx: 0,    tr:   0 },
+    { tx: 52,   tr:  11 },
+    { tx: 100,  tr:  22 },
+  ]
+  return (
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur flex flex-col items-center justify-center gap-10">
+      <div className="relative h-40 flex items-end justify-center w-64">
+        {cards.map((c, i) => (
+          <div
+            key={i}
+            className="absolute w-20 h-28 rounded-xl overflow-hidden shadow-2xl"
+            style={{
+              '--tx': `${c.tx}px`,
+              '--tr': `${c.tr}deg`,
+              animation: `shuffle-card 1.6s ease-in-out ${i * 0.07}s infinite`,
+              zIndex: i,
+            } as React.CSSProperties}
+          >
+            <img src="/card-back.png" alt="" className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </div>
+      <div className="text-center space-y-2">
+        <p className="text-white text-2xl font-bold tracking-wide">Shuffling Deck…</p>
+        <p className="text-amber-400 text-sm animate-pulse">Preparing your cards</p>
+      </div>
     </div>
   )
 }
