@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createAuthClient } from '@/lib/supabase-server'
-import { readdir, readFile } from 'fs/promises'
-import { join } from 'path'
+import { createAuthClient, createAdminClient } from '@/lib/supabase-server'
 
-const REPORTS_DIR = join(process.cwd(), 'bug-reports')
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
 
 export async function GET() {
@@ -14,22 +11,13 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  let files: string[]
-  try {
-    files = await readdir(REPORTS_DIR)
-  } catch {
-    // Directory doesn't exist yet — no reports filed
-    return NextResponse.json({ reports: [] })
-  }
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('bug_reports')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-  const txtFiles = files.filter(f => f.endsWith('.txt')).sort().reverse() // newest first
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const reports = await Promise.all(
-    txtFiles.map(async filename => {
-      const content = await readFile(join(REPORTS_DIR, filename), 'utf8')
-      return { filename, content }
-    })
-  )
-
-  return NextResponse.json({ reports })
+  return NextResponse.json({ reports: data })
 }

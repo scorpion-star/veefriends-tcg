@@ -6,13 +6,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 
 type Report = {
-  filename: string
-  content: string
-}
-
-function parseField(content: string, field: string): string {
-  const line = content.split('\n').find(l => l.startsWith(`${field}:`))
-  return line ? line.slice(field.length + 1).trim() : '—'
+  id: string
+  created_at: string
+  user_id: string
+  username: string | null
+  email: string | null
+  title: string
+  description: string
 }
 
 export default function AdminPage() {
@@ -43,8 +43,10 @@ export default function AdminPage() {
 
   const filtered = reports.filter(r =>
     !search.trim() ||
-    r.content.toLowerCase().includes(search.toLowerCase()) ||
-    r.filename.toLowerCase().includes(search.toLowerCase())
+    r.title.toLowerCase().includes(search.toLowerCase()) ||
+    r.description.toLowerCase().includes(search.toLowerCase()) ||
+    (r.username ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (r.email ?? '').toLowerCase().includes(search.toLowerCase())
   )
 
   if (loading) {
@@ -68,7 +70,6 @@ export default function AdminPage() {
       <div className="max-w-4xl mx-auto p-6 space-y-5">
         {error && <p className="text-red-400">{error}</p>}
 
-        {/* Search */}
         <input
           type="text"
           value={search}
@@ -85,37 +86,30 @@ export default function AdminPage() {
 
         <div className="space-y-3">
           {filtered.map(report => {
-            const title    = parseField(report.content, 'Title') === '—'
-              ? report.content.split('\n').find(l => l.trim() && !l.includes(':')) ?? report.filename
-              : (() => {
-                  // Title is on the line after "Title:"
-                  const lines = report.content.split('\n')
-                  const idx = lines.findIndex(l => l.startsWith('Title:'))
-                  return idx !== -1 ? (lines[idx + 1]?.trim() || report.filename) : report.filename
-                })()
-            const username = parseField(report.content, 'Username')
-            const date     = parseField(report.content, 'Date')
-            const isOpen   = expanded === report.filename
+            const isOpen = expanded === report.id
+            const date = new Date(report.created_at).toLocaleString()
 
             return (
-              <div key={report.filename} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+              <div key={report.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
                 <button
                   className="w-full text-left px-5 py-4 flex items-start justify-between gap-4 hover:bg-gray-800/50 transition"
-                  onClick={() => setExpanded(isOpen ? null : report.filename)}
+                  onClick={() => setExpanded(isOpen ? null : report.id)}
                 >
                   <div className="min-w-0">
-                    <p className="font-semibold text-white truncate">{title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{username} · {date}</p>
+                    <p className="font-semibold text-white truncate">{report.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{report.username ?? report.email} · {date}</p>
                   </div>
                   <span className="text-gray-600 shrink-0">{isOpen ? '▲' : '▼'}</span>
                 </button>
 
                 {isOpen && (
-                  <div className="border-t border-gray-800 px-5 py-4">
-                    <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
-                      {report.content}
-                    </pre>
-                    <p className="text-xs text-gray-600 mt-3 font-mono">File: bug-reports/{report.filename}</p>
+                  <div className="border-t border-gray-800 px-5 py-4 space-y-3">
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{report.description}</p>
+                    <div className="text-xs text-gray-600 space-y-0.5 font-mono">
+                      <p>User: {report.username ?? '—'} · {report.email}</p>
+                      <p>ID: {report.user_id}</p>
+                      <p>Date: {date}</p>
+                    </div>
                   </div>
                 )}
               </div>
