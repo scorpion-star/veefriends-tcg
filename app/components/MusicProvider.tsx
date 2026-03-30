@@ -144,26 +144,26 @@ export default function MusicProvider() {
   const sfxIcon = sfxMuted ? '🔕' : '🔔'
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-end gap-2 px-4 bg-gray-950/90 backdrop-blur-sm border-b border-gray-800/60">
       {coins !== null && (
-        <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-2 rounded-2xl select-none">
-          <CoinIcon size={20} />
+        <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-1.5 rounded-xl select-none">
+          <CoinIcon size={18} />
           <span className="text-amber-300 font-bold text-sm">{coins}</span>
         </div>
       )}
       <button
         onClick={toggleSfx}
-        className="flex items-center gap-2 bg-gray-900/80 backdrop-blur border border-gray-700 hover:border-amber-600/60 px-3 py-2 rounded-2xl text-sm font-medium text-gray-300 hover:text-white transition-all hover:shadow-md hover:shadow-amber-900/20 select-none"
+        className="flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-amber-600/60 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white transition-all select-none"
       >
-        <span className="text-base leading-none">{sfxIcon}</span>
+        <span className="text-sm leading-none">{sfxIcon}</span>
         <span>SFX</span>
       </button>
       {!isGameRoute(pathname) && (
         <button
           onClick={toggleMusic}
-          className="flex items-center gap-2 bg-gray-900/80 backdrop-blur border border-gray-700 hover:border-amber-600/60 px-3 py-2 rounded-2xl text-sm font-medium text-gray-300 hover:text-white transition-all hover:shadow-md hover:shadow-amber-900/20 select-none"
+          className="flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-amber-600/60 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white transition-all select-none"
         >
-          <span className="text-base leading-none">{musicIcon}</span>
+          <span className="text-sm leading-none">{musicIcon}</span>
           <span>Music</span>
         </button>
       )}
