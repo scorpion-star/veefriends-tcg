@@ -170,6 +170,13 @@ export default function GameRoomPage() {
     }
   }, [state?.turn, state?.currentRound.tieCount]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Match over sound
+  useEffect(() => {
+    if (state?.phase === 'game_over' && myKey) {
+      state.winner === myKey ? SFX.matchWin() : SFX.matchLoss()
+    }
+  }, [state?.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Polling fallback — keeps game in sync if realtime subscription drops
   useEffect(() => {
     const poll = setInterval(async () => {

@@ -409,6 +409,13 @@ export default function PracticePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState?.turn, gameState?.currentRound.tieCount])
 
+  // Match over sound
+  useEffect(() => {
+    if (gameState?.phase === 'game_over') {
+      gameState.winner === 'human' ? SFX.matchWin() : SFX.matchLoss()
+    }
+  }, [gameState?.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // CPU auto-action
   useEffect(() => {
     if (!gameState || gameState.phase === 'game_over' || isRevealing) return
