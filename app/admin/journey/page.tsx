@@ -79,6 +79,7 @@ export default function AdminJourneyPage() {
       for (let i = 1; i <= TOTAL_MAPS; i++) {
         if (d[`map_${i}`]) images[i] = d[`map_${i}`]
       }
+      if (!images[1]) images[1] = '/journey-map.png'
       setMapImages(images)
     }
   }
@@ -334,15 +335,13 @@ export default function AdminJourneyPage() {
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                {mapImages[o.section ?? 1] && (
-                  <button
-                    onClick={() => { setActiveMapSection(o.section ?? 1); setPlacingId(placingId === o.id ? null : o.id) }}
-                    className={`p-2 text-sm transition rounded-lg ${placingId === o.id ? 'bg-blue-700 text-white' : 'text-gray-400 hover:text-blue-400'}`}
-                    title="Place on map"
-                  >
-                    📍
-                  </button>
-                )}
+                <button
+                  onClick={() => { setActiveMapSection(o.section ?? 1); setPlacingId(placingId === o.id ? null : o.id) }}
+                  className={`p-2 text-sm transition rounded-lg ${placingId === o.id ? 'bg-blue-700 text-white' : 'text-gray-400 hover:text-blue-400'}`}
+                  title="Place on map"
+                >
+                  📍
+                </button>
                 <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
                 <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
                 <button onClick={() => openEdit(o)} className="p-2 text-gray-500 hover:text-blue-400 transition">✎</button>
