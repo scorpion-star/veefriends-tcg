@@ -64,7 +64,10 @@ export default function AdminPage() {
           <Link href="/" className="text-gray-400 hover:text-white transition text-sm">← Home</Link>
           <h1 className="text-xl font-bold">Admin — Bug Reports</h1>
         </div>
-        <span className="text-sm text-gray-500">{reports.length} total</span>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/journey" className="text-sm text-amber-400 hover:text-amber-300 transition font-semibold">🗺 Journey</Link>
+          <span className="text-sm text-gray-500">{reports.length} total</span>
+        </div>
       </header>
 
       <div className="max-w-4xl mx-auto p-6 space-y-5">

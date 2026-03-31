@@ -13,6 +13,7 @@ const SPARKLES = [
 
 export default function SparkleTitle({ children }: { children: React.ReactNode }) {
   return (
+    <div className="w-full text-center">
     <div className="relative inline-block">
       {SPARKLES.map((s, i) => (
         <span
@@ -32,6 +33,7 @@ export default function SparkleTitle({ children }: { children: React.ReactNode }
       <h1 className="menu-title text-7xl font-black tracking-tight drop-shadow-2xl whitespace-nowrap">
         {children}
       </h1>
+    </div>
     </div>
   )
 }

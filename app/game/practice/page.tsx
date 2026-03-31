@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Card, Attribute, TieBank, EMPTY_BANK, shuffle, RARITY_MULTIPLIER } from '@/lib/game-types'
@@ -9,6 +9,7 @@ import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
 import CardStats from '@/app/components/CardStats'
 import { PlayerScoreRow, TieBankSidebar } from '@/app/components/GemBoard'
+import CoinIcon from '@/app/components/CoinIcon'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -320,18 +321,27 @@ function cpuDecide(
 
     if (difficulty === 'easy') return { type: 'accept' }
 
+    const bestCounter = availableCounter.length > 0
+      ? availableCounter.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, availableCounter[0])
+      : null
+
     if (difficulty === 'medium') {
+      // Decline to a better attribute if one is available
+      if (!isLastDecline && bestCounter && cpuCard[bestCounter] > cpuVal) {
+        return { type: 'decline', counterAttribute: bestCounter }
+      }
       if (cpuVal >= 5) return { type: 'accept' }
       if (isLastDecline) return { type: 'decline', counterAttribute: null }
-      const counter = availableCounter.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, availableCounter[0])
-      return { type: 'decline', counterAttribute: counter }
+      return { type: 'decline', counterAttribute: bestCounter }
     }
 
-    // Hard — accept if CPU's value is strong (≥6), otherwise counter with own best
+    // Hard — decline to a better attribute if one is available, otherwise accept if strong (≥6)
+    if (!isLastDecline && bestCounter && cpuCard[bestCounter] > cpuVal) {
+      return { type: 'decline', counterAttribute: bestCounter }
+    }
     if (cpuVal >= 6) return { type: 'accept' }
     if (isLastDecline) return { type: 'decline', counterAttribute: null }
-    const counter = availableCounter.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, availableCounter[0])
-    return { type: 'decline', counterAttribute: counter }
+    return { type: 'decline', counterAttribute: bestCounter }
   }
 
   return { type: 'accept' }
@@ -342,6 +352,15 @@ function cpuDecide(
 export default function PracticePage() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Journey mode params (present when launched from /game/journey)
+  const journeyOpponentId = searchParams.get('journeyOpponentId')
+  const journeyOpponentName = searchParams.get('opponentName')
+  const journeyOpponentAvatar = searchParams.get('opponentAvatar')
+  const journeyCoinsReward = Number(searchParams.get('coinsReward') ?? '0')
+  const journeyDeckId = searchParams.get('deckId')
+  const isJourneyMode = !!journeyOpponentId
 
   // Setup
   const [userDecks, setUserDecks] = useState<SavedDeck[]>([])
@@ -359,6 +378,7 @@ export default function PracticePage() {
   const [cardMap, setCardMap] = useState<Record<number, Card>>({})
   const [cpuThinking, setCpuThinking] = useState(false)
   const [isRevealing, setIsRevealing] = useState(false)
+  const [coinsEarned, setCoinsEarned] = useState<number | null>(null)
   const [shuffling, setShuffling] = useState(false)
   const pendingStateRef = useRef<PracticeState | null>(null)
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -378,14 +398,39 @@ export default function PracticePage() {
         supabase.from('user_profiles').select('avatar_url, username').eq('user_id', user.id).single(),
       ])
 
-      if (decks) setUserDecks((decks as SavedDeck[]).filter(d => d.card_ids.length === 20))
+      const validDecks = (decks as SavedDeck[] ?? []).filter(d => d.card_ids.length === 20)
+      if (decks) setUserDecks(validDecks)
       if (cards) setAllCards(cards as Card[])
       if (profile?.avatar_url) setAvatarUrl(profile.avatar_url)
       if (profile?.username) setUsername(profile.username)
+
+      // Journey mode: pre-select deck + difficulty, then auto-start
+      if (isJourneyMode && journeyDeckId) {
+        const journeyDifficulty = (searchParams.get('difficulty') as Difficulty) ?? 'medium'
+        setSelectedDeckId(journeyDeckId)
+        setDifficulty(journeyDifficulty)
+        setLoadingSetup(false)
+        // Auto-start will fire via a separate effect once allCards is set
+        return
+      }
+
       setLoadingSetup(false)
     }
     load()
   }, [supabase, router])
+
+  // Journey mode: auto-start once cards are loaded
+  useEffect(() => {
+    if (!isJourneyMode || !journeyDeckId || allCards.length === 0 || gameState || shuffling) return
+    const journeyDifficulty = (searchParams.get('difficulty') as Difficulty) ?? 'medium'
+    setDifficulty(journeyDifficulty)
+    setSelectedDeckId(journeyDeckId)
+  }, [isJourneyMode, journeyDeckId, allCards.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isJourneyMode || !journeyDeckId || !selectedDeckId || allCards.length === 0 || gameState || shuffling || loadingSetup) return
+    startGame()
+  }, [isJourneyMode, selectedDeckId, allCards.length, loadingSetup]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reveal overlay — fires after any round resolution (win or tie)
   useEffect(() => {
@@ -409,10 +454,27 @@ export default function PracticePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState?.turn, gameState?.currentRound.tieCount])
 
-  // Match over sound
+  // Match over sound + coin reward
   useEffect(() => {
     if (gameState?.phase === 'game_over') {
       gameState.winner === 'human' ? SFX.matchWin() : SFX.matchLoss()
+      if (gameState.winner === 'human') {
+        if (isJourneyMode && journeyOpponentId) {
+          fetch('/api/game/journey/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ opponentId: journeyOpponentId }),
+          })
+            .then(r => r.json())
+            .then(d => { if (d.coinsEarned > 0) setCoinsEarned(d.coinsEarned) })
+            .catch(() => {})
+        } else if (difficulty === 'hard') {
+          fetch('/api/coins/practice-win', { method: 'POST' })
+            .then(r => r.json())
+            .then(d => { if (d.earned) setCoinsEarned(d.earned) })
+            .catch(() => {})
+        }
+      }
     }
   }, [gameState?.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -725,9 +787,7 @@ export default function PracticePage() {
                     {d === 'easy' ? '🟢' : d === 'medium' ? '🟡' : '🔴'}
                   </p>
                   <p className="font-bold capitalize">{d}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {d === 'easy' ? 'Always accepts' : d === 'medium' ? 'Plays its best stat' : 'Reads your card'}
-                  </p>
+
                 </button>
               ))}
             </div>
@@ -774,12 +834,23 @@ export default function PracticePage() {
               />
             </div>
           ) : (
-            <div className="text-9xl mb-6 drop-shadow-2xl">🤖</div>
+            <div className="mb-6 flex justify-center">
+              {journeyOpponentAvatar ? (
+                <img src={journeyOpponentAvatar} alt={journeyOpponentName ?? 'CPU'} className="w-24 h-24 rounded-full object-cover border-2 border-gray-600" />
+              ) : (
+                <div className="text-9xl drop-shadow-2xl">🤖</div>
+              )}
+            </div>
           )}
           <h1 className={`text-6xl font-black mb-3 ${iWon ? 'text-yellow-300 drop-shadow-[0_0_30px_rgba(253,224,71,0.6)]' : 'text-gray-300'}`}>{iWon ? 'You Won!' : 'CPU Wins'}</h1>
           <p className="text-gray-400 mb-2">
-            vs CPU {DIFFICULTY_LABEL[difficulty]}
+            vs {journeyOpponentName ?? `CPU ${DIFFICULTY_LABEL[difficulty]}`}
           </p>
+          {iWon && coinsEarned && (
+            <p className="text-yellow-300 font-semibold text-lg mt-1 mb-1 flex items-center justify-center gap-1.5">
+              <CoinIcon size={20} /> +{coinsEarned} coin
+            </p>
+          )}
           <div className="flex justify-center gap-4 my-8">
             {([
               { label: 'You', pts: gameState.human.points, highlight: iWon },
@@ -803,19 +874,29 @@ export default function PracticePage() {
               </div>
             ))}
           </div>
-          <div className="flex gap-3 justify-center mt-4">
-            <button
-              onClick={() => setGameState(null)}
-              className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-semibold transition"
-            >
-              Play Again
-            </button>
+          <div className="flex gap-3 justify-center mt-4 flex-wrap">
+            {!isJourneyMode && (
+              <button
+                onClick={() => { setGameState(null); setCoinsEarned(null) }}
+                className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-semibold transition"
+              >
+                Play Again
+              </button>
+            )}
             <Link
-              href="/play"
+              href={isJourneyMode ? '/game/journey' : '/play'}
               className="bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-xl transition"
             >
-              Back to Play
+              {isJourneyMode ? 'Back to Journey' : 'Back to Play'}
             </Link>
+            {isJourneyMode && !iWon && (
+              <button
+                onClick={() => { setGameState(null); setCoinsEarned(null) }}
+                className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-semibold transition"
+              >
+                Try Again
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -980,14 +1061,14 @@ export default function PracticePage() {
           <div className="relative w-24 h-24 rounded-full overflow-hidden border-3 border-gray-600 bg-gray-800 flex items-center justify-center shrink-0">
             <span className="text-5xl">🤖</span>
             <img
-              src="/cpu-avatar.png"
+              src={journeyOpponentAvatar ?? '/cpu-avatar.png'}
               alt="CPU"
               className="absolute inset-0 w-full h-full object-cover"
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-bold text-gray-200">CPU {DIFFICULTY_LABEL[difficulty]}</p>
+            <p className="text-lg font-bold text-gray-200">{journeyOpponentName ?? `CPU ${DIFFICULTY_LABEL[difficulty]}`}</p>
             <p className="text-sm text-gray-500">{gameState.cpu.deck.length} cards left</p>
             {cpuThinking && <p className="text-sm text-amber-400 animate-pulse">Thinking…</p>}
           </div>

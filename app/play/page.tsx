@@ -296,6 +296,16 @@ export default function PlayPage() {
                 <p className="text-gray-400 text-sm">Play with a friend using a room code</p>
               </button>
 
+              {/* Single Player Journey */}
+              <Link
+                href="/game/journey"
+                className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-yellow-500 hover:shadow-md hover:shadow-yellow-900/30 p-6 rounded-2xl text-left transition block"
+              >
+                <div className="text-3xl mb-3">🗺</div>
+                <h3 className="text-xl font-bold mb-1">Single Player Journey</h3>
+                <p className="text-gray-400 text-sm">Face opponents, earn coins, defeat bosses</p>
+              </Link>
+
               {/* Practice vs CPU */}
               <Link
                 href="/game/practice"
