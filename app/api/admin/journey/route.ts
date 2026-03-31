@@ -10,11 +10,8 @@ async function assertAdmin() {
   return user
 }
 
-// GET /api/admin/journey — list all opponents ordered by stage_order
+// GET /api/admin/journey — list all opponents ordered by stage_order (public)
 export async function GET() {
-  const user = await assertAdmin()
-  if (!user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('cpu_opponents')
