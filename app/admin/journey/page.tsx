@@ -50,7 +50,6 @@ export default function AdminJourneyPage() {
   const [mapImages, setMapImages] = useState<Record<number, string>>({})
   const [uploadingMap, setUploadingMap] = useState(false)
   const [activeMapSection, setActiveMapSection] = useState(1)
-  const [savedId, setSavedId] = useState<string | null>(null)
   const TOTAL_MAPS = 10
 
   useEffect(() => {
@@ -97,17 +96,6 @@ export default function AdminJourneyPage() {
       setError((await res.json()).error)
     }
     setUploadingMap(false)
-  }
-
-  async function savePosition(id: string, x: number, y: number) {
-    setOpponents(prev => prev.map(o => o.id === id ? { ...o, position_x: x, position_y: y } : o))
-    await fetch('/api/admin/journey', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, position_x: x, position_y: y }),
-    })
-    setSavedId(id)
-    setTimeout(() => setSavedId(null), 1500)
   }
 
   async function handleSave() {
@@ -211,12 +199,7 @@ export default function AdminJourneyPage() {
 
         {/* ── Opponent list ── */}
         <section className="space-y-3">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Opponents</h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Set <strong className="text-gray-300">X%</strong> (left→right) and <strong className="text-gray-300">Y%</strong> (top→bottom) to position each opponent on the map. 0 = far left/top, 100 = far right/bottom, 50 = center. Press Enter or click away to save.
-            </p>
-          </div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Opponents</h2>
 
           {opponents.length === 0 && !showForm && (
             <div className="text-center text-gray-500 py-12 bg-gray-900 rounded-2xl border border-gray-800">
@@ -226,82 +209,43 @@ export default function AdminJourneyPage() {
           )}
 
           {opponents.map((o, index) => (
-            <div key={o.id} className={`bg-gray-900 border rounded-2xl p-4 flex flex-col gap-3 ${
-              savedId === o.id ? 'border-green-500/70' : o.is_boss ? 'border-yellow-600/50' : 'border-gray-800'
-            }`}>
-              <div className="flex items-center gap-4">
-                {/* Avatar + upload */}
-                <div className="relative group shrink-0">
-                  <AvatarOrInitials url={o.avatar_url} name={o.name} size={52} />
-                  <button
-                    onClick={() => {
-                      const input = document.createElement('input')
-                      input.type = 'file'
-                      input.accept = 'image/jpeg,image/png,image/webp'
-                      input.onchange = e => {
-                        const file = (e.target as HTMLInputElement).files?.[0]
-                        if (file) handleAvatarUpload(o, file)
-                      }
-                      input.click()
-                    }}
-                    className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-semibold"
-                  >
-                    {uploadingAvatarId === o.id ? '…' : '📷'}
-                  </button>
-                </div>
+            <div key={o.id} className={`bg-gray-900 border rounded-2xl p-4 flex items-center gap-4 ${o.is_boss ? 'border-yellow-600/50' : 'border-gray-800'}`}>
+              <div className="relative group shrink-0">
+                <AvatarOrInitials url={o.avatar_url} name={o.name} size={52} />
+                <button
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/jpeg,image/png,image/webp'
+                    input.onchange = e => {
+                      const file = (e.target as HTMLInputElement).files?.[0]
+                      if (file) handleAvatarUpload(o, file)
+                    }
+                    input.click()
+                  }}
+                  className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-semibold"
+                >
+                  {uploadingAvatarId === o.id ? '…' : '📷'}
+                </button>
+              </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold">{o.name}</span>
-                    {o.is_boss && <span className="text-xs bg-yellow-800/60 text-yellow-300 px-2 py-0.5 rounded-full">BOSS</span>}
-                    {savedId === o.id && <span className="text-xs text-green-400 font-semibold">✓ Saved</span>}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-3 flex-wrap">
-                    <span>{DIFF_ICON[o.difficulty]} {o.difficulty}</span>
-                    <span>🪙 {o.coins_reward}</span>
-                    <span className="text-gray-600">Map {o.section ?? 1} · #{index + 1}</span>
-                  </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold">{o.name}</span>
+                  {o.is_boss && <span className="text-xs bg-yellow-800/60 text-yellow-300 px-2 py-0.5 rounded-full">BOSS</span>}
                 </div>
-
-                <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
-                  <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
-                  <button onClick={() => openEdit(o)} className="p-2 text-gray-500 hover:text-blue-400 transition">✎</button>
-                  <button onClick={() => handleDelete(o.id)} className="p-2 text-gray-500 hover:text-red-400 transition">✕</button>
+                <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-3 flex-wrap">
+                  <span>{DIFF_ICON[o.difficulty]} {o.difficulty}</span>
+                  <span>🪙 {o.coins_reward}</span>
+                  <span className="text-gray-600">Map {o.section ?? 1} · #{index + 1}</span>
                 </div>
               </div>
 
-              {/* Position inputs */}
-              <div className="flex items-center gap-3 bg-gray-800 rounded-xl px-4 py-2.5">
-                <span className="text-xs text-gray-400 uppercase tracking-wider shrink-0">Position on map:</span>
-                <label className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-400">X%</span>
-                  <input
-                    type="number" min={0} max={100} step={1}
-                    defaultValue={Math.round(o.position_x ?? 50)}
-                    key={`${o.id}-x-${o.position_x}`}
-                    className="w-16 bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:border-blue-500"
-                    onBlur={e => savePosition(o.id, Number(e.target.value), o.position_y ?? 50)}
-                    onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                  />
-                </label>
-                <label className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-400">Y%</span>
-                  <input
-                    type="number" min={0} max={100} step={1}
-                    defaultValue={Math.round(o.position_y ?? 50)}
-                    key={`${o.id}-y-${o.position_y}`}
-                    className="w-16 bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:border-blue-500"
-                    onBlur={e => savePosition(o.id, o.position_x ?? 50, Number(e.target.value))}
-                    onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-                  />
-                </label>
-                <button
-                  onClick={() => setActiveMapSection(o.section ?? 1)}
-                  className="ml-auto text-xs text-gray-400 hover:text-white transition underline"
-                >
-                  Preview on map ↓
-                </button>
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
+                <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
+                <button onClick={() => openEdit(o)} className="p-2 text-gray-500 hover:text-blue-400 transition">✎</button>
+                <button onClick={() => handleDelete(o.id)} className="p-2 text-gray-500 hover:text-red-400 transition">✕</button>
               </div>
             </div>
           ))}
@@ -341,9 +285,7 @@ export default function AdminJourneyPage() {
                   className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 pointer-events-none"
                   style={{ left: `${o.position_x ?? 50}%`, top: `${o.position_y ?? 50}%` }}
                 >
-                  <div className={`rounded-full overflow-hidden border-2 shadow-lg ${
-                    savedId === o.id ? 'border-green-400' : o.is_boss ? 'border-yellow-400' : 'border-white'
-                  }`} style={{ width: 36, height: 36 }}>
+                  <div className={`rounded-full overflow-hidden border-2 shadow-lg ${o.is_boss ? 'border-yellow-400' : 'border-white'}`} style={{ width: 36, height: 36 }}>
                     {o.avatar_url
                       ? <img src={o.avatar_url} alt={o.name} className="w-full h-full object-cover" />
                       : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs font-black text-gray-300">{o.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
