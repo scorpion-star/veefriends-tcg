@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -38,7 +38,8 @@ function AvatarOrInitials({ url, name, size = 48 }: { url: string | null; name: 
 export default function AdminJourneyPage() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
-  const mapRef = useRef<HTMLImageElement>(null)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const dragPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const [opponents, setOpponents] = useState<Opponent[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,7 +51,8 @@ export default function AdminJourneyPage() {
   const [uploadingAvatarId, setUploadingAvatarId] = useState<string | null>(null)
   const [mapImages, setMapImages] = useState<Record<number, string>>({})
   const [uploadingMap, setUploadingMap] = useState(false)
-  const [placingId, setPlacingId] = useState<string | null>(null)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [savedId, setSavedId] = useState<string | null>(null)
   const [activeMapSection, setActiveMapSection] = useState(1)
   const TOTAL_MAPS = 10
 
@@ -63,6 +65,49 @@ export default function AdminJourneyPage() {
     }
     load()
   }, [supabase, router]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Global drag handlers
+  const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
+    if (!mapContainerRef.current) return
+    const rect = mapContainerRef.current.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+    const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
+    const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100))
+    dragPosRef.current = { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }
+    setOpponents(prev => prev.map(o => o.id === draggingId
+      ? { ...o, position_x: dragPosRef.current!.x, position_y: dragPosRef.current!.y }
+      : o
+    ))
+  }, [draggingId])
+
+  const handleMouseUp = useCallback(async () => {
+    if (!draggingId || !dragPosRef.current) { setDraggingId(null); return }
+    const { x, y } = dragPosRef.current
+    dragPosRef.current = null
+    await fetch('/api/admin/journey', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: draggingId, position_x: x, position_y: y }),
+    })
+    setSavedId(draggingId)
+    setTimeout(() => setSavedId(null), 1200)
+    setDraggingId(null)
+  }, [draggingId])
+
+  useEffect(() => {
+    if (!draggingId) return
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('touchmove', handleMouseMove, { passive: false })
+    window.addEventListener('touchend', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('touchmove', handleMouseMove)
+      window.removeEventListener('touchend', handleMouseUp)
+    }
+  }, [draggingId, handleMouseMove, handleMouseUp])
 
   async function fetchOpponents() {
     const res = await fetch('/api/admin/journey')
@@ -169,23 +214,6 @@ export default function AdminJourneyPage() {
     setUploadingAvatarId(null)
   }
 
-  async function handleMapClick(e: React.MouseEvent<HTMLImageElement>) {
-    if (!placingId || !mapRef.current) return
-    const rect = mapRef.current.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
-    const px = Math.round(x * 10) / 10
-    const py = Math.round(y * 10) / 10
-
-    setOpponents(prev => prev.map(o => o.id === placingId ? { ...o, position_x: px, position_y: py } : o))
-    await fetch('/api/admin/journey', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: placingId, position_x: px, position_y: py }),
-    })
-    setPlacingId(null)
-  }
-
   function openEdit(o: Opponent) {
     setEditingId(o.id)
     setForm({ name: o.name, difficulty: o.difficulty, is_boss: o.is_boss, coins_reward: o.coins_reward, section: o.section ?? 1 })
@@ -224,9 +252,9 @@ export default function AdminJourneyPage() {
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Journey Maps</h2>
               <div className="flex items-center gap-1">
-                <button onClick={() => { setPlacingId(null); setActiveMapSection(s => Math.max(1, s - 1)) }} disabled={activeMapSection === 1} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">‹</button>
+                <button onClick={() => setActiveMapSection(s => Math.max(1, s - 1))} disabled={activeMapSection === 1} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">‹</button>
                 <span className="text-sm font-bold text-white w-16 text-center">Map {activeMapSection}/{TOTAL_MAPS}</span>
-                <button onClick={() => { setPlacingId(null); setActiveMapSection(s => Math.min(TOTAL_MAPS, s + 1)) }} disabled={activeMapSection === TOTAL_MAPS} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">›</button>
+                <button onClick={() => setActiveMapSection(s => Math.min(TOTAL_MAPS, s + 1))} disabled={activeMapSection === TOTAL_MAPS} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">›</button>
               </div>
             </div>
             <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-semibold transition ${
@@ -239,50 +267,50 @@ export default function AdminJourneyPage() {
           </div>
 
           {mapImages[activeMapSection] ? (
-            <div className="relative rounded-2xl overflow-hidden border border-gray-700">
-              {placingId && (
-                <div className="absolute inset-0 z-10 bg-blue-900/30 border-2 border-blue-400 flex items-center justify-center pointer-events-none rounded-2xl">
-                  <div className="bg-blue-900/90 text-blue-200 px-4 py-2 rounded-xl text-sm font-semibold shadow-xl pointer-events-none">
-                    Click on the map to place "{opponents.find(o => o.id === placingId)?.name}"
+            <>
+              <p className="text-xs text-gray-500 mb-2">Drag opponent avatars on the map to reposition them. Release to save.</p>
+              <div
+                ref={mapContainerRef}
+                className={`relative rounded-2xl overflow-hidden border border-gray-700 select-none ${draggingId ? 'cursor-grabbing' : ''}`}
+              >
+                <img
+                  src={mapImages[activeMapSection]}
+                  alt={`Map ${activeMapSection}`}
+                  className="w-full h-auto block pointer-events-none"
+                  draggable={false}
+                />
+                {opponents.filter(o => (o.section ?? 1) === activeMapSection).map(o => (
+                  <div
+                    key={o.id}
+                    onMouseDown={e => { e.preventDefault(); setDraggingId(o.id) }}
+                    onTouchStart={e => { e.preventDefault(); setDraggingId(o.id) }}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 ${
+                      draggingId === o.id ? 'cursor-grabbing scale-110 z-10' : 'cursor-grab hover:scale-105'
+                    } transition-transform`}
+                    style={{ left: `${o.position_x ?? 50}%`, top: `${o.position_y ?? 50}%` }}
+                  >
+                    <div className={`rounded-full overflow-hidden border-2 shadow-lg ${
+                      savedId === o.id ? 'border-green-400' : o.is_boss ? 'border-yellow-400' : 'border-white'
+                    }`} style={{ width: 36, height: 36 }}>
+                      {o.avatar_url
+                        ? <img src={o.avatar_url} alt={o.name} className="w-full h-full object-cover pointer-events-none" />
+                        : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs font-black text-gray-300">{o.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
+                      }
+                    </div>
+                    <div className={`text-xs px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap shadow ${
+                      savedId === o.id ? 'bg-green-800/90 text-green-200' : 'bg-gray-900/90 text-white'
+                    }`}>
+                      {savedId === o.id ? '✓ Saved' : o.name.split(' ')[0]}
+                    </div>
                   </div>
-                </div>
-              )}
-              <img
-                ref={mapRef}
-                src={mapImages[activeMapSection]}
-                alt={`Map ${activeMapSection}`}
-                className={`w-full h-auto block ${placingId ? 'cursor-crosshair' : ''}`}
-                onClick={handleMapClick}
-                draggable={false}
-              />
-              {/* Opponent nodes for this section only */}
-              {opponents.filter(o => (o.section ?? 1) === activeMapSection).map(o => (
-                <div key={o.id}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 ${placingId === o.id ? 'opacity-30' : ''}`}
-                  style={{ left: `${o.position_x ?? 50}%`, top: `${o.position_y ?? 50}%`, pointerEvents: 'none' }}>
-                  <div className={`rounded-full overflow-hidden border-2 shadow-lg ${o.is_boss ? 'border-yellow-400' : 'border-white'}`} style={{ width: 32, height: 32 }}>
-                    {o.avatar_url
-                      ? <img src={o.avatar_url} alt={o.name} className="w-full h-full object-cover" />
-                      : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs font-black text-gray-300">{o.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
-                    }
-                  </div>
-                  <div className="bg-gray-900/90 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap shadow">
-                    {o.name.split(' ')[0]}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="border-2 border-dashed border-gray-700 rounded-2xl p-12 text-center text-gray-500">
               <p className="text-4xl mb-2">🗺</p>
               <p className="text-sm">Upload an image for Map {activeMapSection}</p>
             </div>
-          )}
-
-          {placingId && (
-            <button onClick={() => setPlacingId(null)} className="mt-2 text-sm text-gray-400 hover:text-white transition">
-              Cancel placement
-            </button>
           )}
         </section>
 
@@ -336,11 +364,11 @@ export default function AdminJourneyPage() {
 
               <div className="flex items-center gap-1 shrink-0">
                 <button
-                  onClick={() => { setActiveMapSection(o.section ?? 1); setPlacingId(placingId === o.id ? null : o.id) }}
-                  className={`p-2 text-sm transition rounded-lg ${placingId === o.id ? 'bg-blue-700 text-white' : 'text-gray-400 hover:text-blue-400'}`}
-                  title="Place on map"
+                  onClick={() => setActiveMapSection(o.section ?? 1)}
+                  className="p-2 text-sm text-gray-400 hover:text-blue-400 transition rounded-lg"
+                  title="Go to this map section"
                 >
-                  📍
+                  🗺
                 </button>
                 <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
                 <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
