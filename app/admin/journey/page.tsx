@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -38,6 +38,7 @@ function AvatarOrInitials({ url, name, size = 48 }: { url: string | null; name: 
 export default function AdminJourneyPage() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
+  const mapContainerRef = useRef<HTMLDivElement>(null)
 
   const [opponents, setOpponents] = useState<Opponent[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,6 +51,8 @@ export default function AdminJourneyPage() {
   const [mapImages, setMapImages] = useState<Record<number, string>>({})
   const [uploadingMap, setUploadingMap] = useState(false)
   const [activeMapSection, setActiveMapSection] = useState(1)
+  const [placingId, setPlacingId] = useState<string | null>(null)
+  const [savedId, setSavedId] = useState<string | null>(null)
   const TOTAL_MAPS = 10
 
   useEffect(() => {
@@ -80,6 +83,28 @@ export default function AdminJourneyPage() {
       if (!images[1]) images[1] = '/journey-map.png'
       setMapImages(images)
     }
+  }
+
+  function startPlacing(o: Opponent) {
+    setPlacingId(o.id)
+    setActiveMapSection(o.section ?? 1)
+    setTimeout(() => document.getElementById('map-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
+  function handleMapClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!placingId || !mapContainerRef.current) return
+    const rect = mapContainerRef.current.getBoundingClientRect()
+    const x = Math.max(0, Math.min(100, Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10))
+    const y = Math.max(0, Math.min(100, Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10))
+    setOpponents(prev => prev.map(o => o.id === placingId ? { ...o, position_x: x, position_y: y } : o))
+    fetch('/api/admin/journey', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: placingId, position_x: x, position_y: y }),
+    })
+    setSavedId(placingId)
+    setTimeout(() => setSavedId(null), 2000)
+    setPlacingId(null)
   }
 
   async function handleMapUpload(file: File, section: number) {
@@ -242,6 +267,12 @@ export default function AdminJourneyPage() {
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => placingId === o.id ? setPlacingId(null) : startPlacing(o)}
+                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition ${placingId === o.id ? 'bg-blue-700 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}
+                >
+                  {placingId === o.id ? 'Cancel' : savedId === o.id ? '✓ Placed' : 'Place'}
+                </button>
                 <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
                 <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
                 <button onClick={() => openEdit(o)} className="p-2 text-gray-500 hover:text-blue-400 transition">✎</button>
@@ -252,7 +283,7 @@ export default function AdminJourneyPage() {
         </section>
 
         {/* ── Map preview ── */}
-        <section>
+        <section id="map-preview">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Map Preview</h2>
@@ -271,8 +302,19 @@ export default function AdminJourneyPage() {
             </label>
           </div>
 
+          {placingId && (
+            <div className="mb-2 bg-blue-950 border border-blue-600 rounded-xl px-4 py-3 text-sm text-blue-200 flex items-center justify-between">
+              <span>👇 Click anywhere on the map to place <strong className="text-white">{opponents.find(o => o.id === placingId)?.name}</strong></span>
+              <button onClick={() => setPlacingId(null)} className="text-blue-400 hover:text-white text-xs underline ml-4">Cancel</button>
+            </div>
+          )}
+
           {mapImages[activeMapSection] ? (
-            <div className="relative rounded-2xl overflow-hidden border border-gray-700">
+            <div
+              ref={mapContainerRef}
+              onClick={handleMapClick}
+              className={`relative rounded-2xl overflow-hidden border select-none ${placingId ? 'border-blue-500 cursor-crosshair' : 'border-gray-700'}`}
+            >
               <img
                 src={mapImages[activeMapSection]}
                 alt={`Map ${activeMapSection}`}
