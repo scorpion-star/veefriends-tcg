@@ -41,6 +41,7 @@ export type GameState = {
   tieBank: TieBank
   winner: PlayerKey | null
   lastRound: LastRound | null
+  rematch?: { player1: boolean; player2: boolean; newGameId?: string }
 }
 
 export type Card = {

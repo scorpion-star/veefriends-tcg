@@ -196,7 +196,9 @@ export default function GameRoomPage() {
           const nextDefender = (data as GameSession).game_state?.currentRound?.currentDefender
           const prevAttr = prev.game_state?.currentRound?.attribute
           const nextAttr = (data as GameSession).game_state?.currentRound?.attribute
-          if (prevTurn !== nextTurn || prevPhase !== nextPhase || prevDefender !== nextDefender || prevAttr !== nextAttr) return data as GameSession
+          const prevRematch = JSON.stringify(prev.game_state?.rematch)
+          const nextRematch = JSON.stringify((data as GameSession).game_state?.rematch)
+          if (prevTurn !== nextTurn || prevPhase !== nextPhase || prevDefender !== nextDefender || prevAttr !== nextAttr || prevRematch !== nextRematch) return data as GameSession
           return prev
         })
       }
@@ -279,6 +281,38 @@ export default function GameRoomPage() {
   // ── GAME OVER ──────────────────────────────────────────────────────────────
   if (state.phase === 'game_over') {
     const iWon = state.winner === myKey
+    const rematch = state.rematch
+    const iRequested = myKey ? rematch?.[myKey] ?? false : false
+    const theyRequested = opponent ? rematch?.[opponent] ?? false : false
+    const newGameId = rematch?.newGameId
+
+    // Auto-redirect both players once the new game is ready
+    if (newGameId) {
+      router.push(`/game/${newGameId}`)
+      return null
+    }
+
+    const doRematch = async () => {
+      if (acting) return
+      setActing(true)
+      try {
+        const res = await fetch('/api/game/rematch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameId }),
+        })
+        const data = await res.json()
+        if (res.ok && data.gameState) {
+          setSession(prev => prev ? { ...prev, game_state: data.gameState } : prev)
+          if (data.gameState.rematch?.newGameId) {
+            router.push(`/game/${data.gameState.rematch.newGameId}`)
+          }
+        }
+      } finally {
+        setActing(false)
+      }
+    }
+
     return (
       <div
         className="min-h-screen flex items-center justify-center text-white p-6 relative"
@@ -293,7 +327,29 @@ export default function GameRoomPage() {
           <p className="text-gray-400 mb-8 text-lg">
             {iWon ? 'You won the match!' : `${opponentLabel} won the match.`}
           </p>
-          <div className="flex gap-3 justify-center">
+
+          {/* Rematch status */}
+          {iRequested && !newGameId && (
+            <p className="text-amber-400 text-sm mb-4 animate-pulse">
+              Waiting for {opponentLabel} to accept rematch…
+            </p>
+          )}
+          {theyRequested && !iRequested && (
+            <p className="text-green-400 text-sm mb-4">
+              {opponentLabel} wants a rematch!
+            </p>
+          )}
+
+          <div className="flex gap-3 justify-center flex-wrap">
+            {!iRequested && (
+              <button
+                disabled={acting}
+                onClick={doRematch}
+                className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 px-6 py-3 rounded-xl font-bold transition shadow-lg shadow-amber-900/40"
+              >
+                {theyRequested ? 'Accept Rematch' : 'Rematch'}
+              </button>
+            )}
             <button
               onClick={() => router.push('/play')}
               className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-semibold transition"
