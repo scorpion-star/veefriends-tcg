@@ -8,7 +8,7 @@ import CoinIcon from './components/CoinIcon'
 import AvatarUpload from './components/AvatarUpload'
 import UsernameSetup from './components/UsernameSetup'
 
-const BG = "min-h-screen relative overflow-hidden"
+const BG = "min-h-screen relative"
 const OVERLAY = "absolute inset-0 bg-black/55"
 
 export default function Home() {
@@ -80,18 +80,18 @@ export default function Home() {
   // ── Logged-in home screen ──────────────────────────────────────────────────
   if (user) {
     return (
-      <div className={`${BG} flex items-center justify-center text-white p-6`}>
-        <div className="absolute inset-0 overflow-hidden">
+      <div className={`${BG} text-white`}>
+        <div className="fixed inset-0 overflow-hidden -z-10">
           <img src="/bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover bg-ken-burns" />
         </div>
-        <div className={OVERLAY} />
+        <div className="fixed inset-0 bg-black/55 -z-10" />
 
         {/* Username setup gate — shown until user picks a name */}
         {!profileLoading && !username && (
           <UsernameSetup onComplete={setUsername} />
         )}
 
-
+        <div className="flex justify-center px-6 py-12">
         <div className="relative z-10 text-center max-w-md w-full">
           <SparkleTitle>VeeFriends TCG</SparkleTitle>
           <p className="text-gray-300 mt-4 mb-8 drop-shadow">Compete & Collect — Series 2</p>
@@ -146,17 +146,19 @@ export default function Home() {
             </button>
           </div>
         </div>
+        </div>
       </div>
     )
   }
 
   // ── Login screen ───────────────────────────────────────────────────────────
   return (
-    <div className={`${BG} flex items-center justify-center text-white p-6`}>
-      <div className="absolute inset-0 overflow-hidden">
+    <div className={`${BG} text-white`}>
+      <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
       </div>
-      <div className={OVERLAY} />
+      <div className="fixed inset-0 bg-black/55 -z-10" />
+      <div className="flex justify-center px-6 py-12">
       <div className="relative z-10 bg-gray-900/80 backdrop-blur p-10 rounded-3xl w-full max-w-md shadow-2xl border border-gray-800">
         <div className="text-center mb-10">
           <SparkleTitle>VeeFriends TCG</SparkleTitle>
@@ -206,6 +208,7 @@ export default function Home() {
         <p className="text-center text-sm text-gray-500 mt-4">
           First time? Click Sign Up and check your email.
         </p>
+      </div>
       </div>
     </div>
   )

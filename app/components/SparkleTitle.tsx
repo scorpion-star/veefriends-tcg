@@ -29,7 +29,7 @@ export default function SparkleTitle({ children }: { children: React.ReactNode }
           ✦
         </span>
       ))}
-      <h1 className="menu-title text-5xl font-black tracking-tight drop-shadow-2xl">
+      <h1 className="menu-title text-7xl font-black tracking-tight drop-shadow-2xl">
         {children}
       </h1>
     </div>
