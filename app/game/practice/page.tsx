@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -349,7 +349,7 @@ function cpuDecide(
 
 // ── Main Component ─────────────────────────────────────────────────────────
 
-export default function PracticePage() {
+function PracticePageInner() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1249,6 +1249,14 @@ function ShuffleOverlay() {
         <p className="text-amber-400 text-sm animate-pulse">Preparing your cards</p>
       </div>
     </div>
+  )
+}
+
+export default function PracticePage() {
+  return (
+    <Suspense>
+      <PracticePageInner />
+    </Suspense>
   )
 }
 
