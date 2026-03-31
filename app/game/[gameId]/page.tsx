@@ -188,23 +188,12 @@ export default function GameRoomPage() {
       if (data) {
         setSession(prev => {
           if (!prev) return data as GameSession
-          const prevPhase = prev.game_state?.phase
-          const nextPhase = (data as GameSession).game_state?.phase
           // Never allow a stale read to revert out of game_over
-          if (prevPhase === 'game_over' && nextPhase !== 'game_over') return prev
-          const prevTurn = prev.game_state?.turn
-          const nextTurn = (data as GameSession).game_state?.turn
-          const prevDefender = prev.game_state?.currentRound?.currentDefender
-          const nextDefender = (data as GameSession).game_state?.currentRound?.currentDefender
-          const prevAttr = prev.game_state?.currentRound?.attribute
-          const nextAttr = (data as GameSession).game_state?.currentRound?.attribute
-          const prevRematch = JSON.stringify(prev.game_state?.rematch)
-          const nextRematch = JSON.stringify((data as GameSession).game_state?.rematch)
-          if (prevTurn !== nextTurn || prevPhase !== nextPhase || prevDefender !== nextDefender || prevAttr !== nextAttr || prevRematch !== nextRematch) return data as GameSession
-          return prev
+          if (prev.game_state?.phase === 'game_over' && (data as GameSession).game_state?.phase !== 'game_over') return prev
+          return data as GameSession
         })
       }
-    }, 3000)
+    }, 1500)
     return () => clearInterval(poll)
   }, [supabase, gameId])
 
