@@ -15,11 +15,12 @@ type Opponent = {
   is_boss: boolean
   coins_reward: number
   stage_order: number
+  section: number
 }
 
 const DIFF_ICON: Record<Difficulty, string> = { easy: '🟢', medium: '🟡', hard: '🔴' }
 
-const BLANK_FORM = { name: '', difficulty: 'easy' as Difficulty, is_boss: false, coins_reward: 1 }
+const BLANK_FORM = { name: '', difficulty: 'easy' as Difficulty, is_boss: false, coins_reward: 1, section: 1 }
 
 function AvatarOrInitials({ url, name, size = 48 }: { url: string | null; name: string; size?: number }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -143,7 +144,7 @@ export default function AdminJourneyPage() {
 
   function openEdit(o: Opponent) {
     setEditingId(o.id)
-    setForm({ name: o.name, difficulty: o.difficulty, is_boss: o.is_boss, coins_reward: o.coins_reward })
+    setForm({ name: o.name, difficulty: o.difficulty, is_boss: o.is_boss, coins_reward: o.coins_reward, section: o.section ?? 1 })
     setShowForm(true)
   }
 
@@ -211,7 +212,7 @@ export default function AdminJourneyPage() {
               <div className="text-sm text-gray-400 mt-0.5 flex items-center gap-3">
                 <span>{DIFF_ICON[o.difficulty]} {o.difficulty}</span>
                 <span>🪙 {o.coins_reward} coin{o.coins_reward !== 1 ? 's' : ''}</span>
-                <span className="text-gray-600">Stage {index + 1}</span>
+                <span className="text-gray-600">Map {o.section ?? 1} · #{index + 1}</span>
               </div>
             </div>
 
@@ -269,6 +270,16 @@ export default function AdminJourneyPage() {
                   min={0}
                   value={form.coins_reward}
                   onChange={e => setForm(f => ({ ...f, coins_reward: Number(e.target.value) }))}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-gray-400 uppercase tracking-wider block mb-1">Map Section</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.section}
+                  onChange={e => setForm(f => ({ ...f, section: Number(e.target.value) }))}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
                 />
               </div>

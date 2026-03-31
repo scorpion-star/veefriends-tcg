@@ -319,7 +319,14 @@ function cpuDecide(
     )
     const isLastDecline = declined.length >= 2
 
-    if (difficulty === 'easy') return { type: 'accept' }
+    if (difficulty === 'easy') {
+      // 30% chance to decline to a random available counter (if not forced faceoff)
+      if (!isLastDecline && availableCounter.length > 0 && Math.random() < 0.3) {
+        const counter = availableCounter[Math.floor(Math.random() * availableCounter.length)]
+        return { type: 'decline', counterAttribute: counter }
+      }
+      return { type: 'accept' }
+    }
 
     const bestCounter = availableCounter.length > 0
       ? availableCounter.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, availableCounter[0])

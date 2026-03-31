@@ -9,6 +9,7 @@ create table if not exists cpu_opponents (
   is_boss boolean not null default false,
   coins_reward integer not null default 1,
   stage_order integer not null default 999,
+  section integer not null default 1,
   created_at timestamptz not null default now()
 );
 
