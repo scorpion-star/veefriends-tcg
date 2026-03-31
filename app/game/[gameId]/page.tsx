@@ -105,13 +105,12 @@ export default function GameRoomPage() {
       if (!game) { router.push('/play'); return }
 
       const opponentId = game.player1_id === user.id ? game.player2_id : game.player1_id
-      const { data: oppProfile } = await supabase
-        .from('user_profiles')
-        .select('avatar_url, username')
-        .eq('user_id', opponentId)
-        .single()
-      if (oppProfile?.avatar_url) setOpponentAvatarUrl(oppProfile.avatar_url)
-      if (oppProfile?.username)   setOpponentUsername(oppProfile.username)
+      const oppRes = await fetch(`/api/profile/${opponentId}`)
+      if (oppRes.ok) {
+        const oppProfile = await oppRes.json()
+        if (oppProfile.avatarUrl) setOpponentAvatarUrl(oppProfile.avatarUrl)
+        if (oppProfile.username)  setOpponentUsername(oppProfile.username)
+      }
 
       setSession(game as GameSession)
       await loadCards(game as GameSession)
