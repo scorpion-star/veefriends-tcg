@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       state.tieBank.skill += 1
       state.tieBank.stamina += 1
       state.lastRound = { attribute: 'sprint', p1Value: p1Score, p2Value: p2Score, winner: 'tie', p1CardId, p2CardId, pointsAwarded: { ...EMPTY_BANK } }
-      advanceRound(state, 'player1')
+      advanceRound(state, 'player1', true)
     } else {
       const roundWinner: PlayerKey = p1Score > p2Score ? 'player1' : 'player2'
       // Sprint win: +1 each + claim all tie bank gems
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
       const challengeCount = state.currentRound.declinedAttributes.length + 1
       state.tieBank[attribute] += challengeCount
       state.lastRound = { attribute, p1Value: p1Val, p2Value: p2Val, winner: 'tie', p1CardId, p2CardId, pointsAwarded: { ...EMPTY_BANK } }
-      advanceRound(state, 'player1')
+      advanceRound(state, 'player1', true)
     } else {
       const roundWinner: PlayerKey = p1Val > p2Val ? 'player1' : 'player2'
       const challengeCount = state.currentRound.declinedAttributes.length + 1
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
         state.tieBank.skill += 1
         state.tieBank.stamina += 1
         state.lastRound = { attribute: 'sprint', p1Value: p1Score, p2Value: p2Score, winner: 'tie', p1CardId, p2CardId, pointsAwarded: { ...EMPTY_BANK } }
-        advanceRound(state, 'player1')
+        advanceRound(state, 'player1', true)
       } else {
         const roundWinner: PlayerKey = p1Score > p2Score ? 'player1' : 'player2'
         state[roundWinner].points.aura += 1
@@ -208,8 +208,8 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
 }
 
-// Move cards to graveyard, draw new ones, switch attacker
-function advanceRound(state: GameState, _winner: PlayerKey) {
+// Move cards to graveyard, draw new ones, optionally switch attacker
+function advanceRound(state: GameState, _winner: PlayerKey, tie = false) {
   const winner = checkWinner(state)
   if (winner) {
     state.winner = winner
@@ -223,7 +223,7 @@ function advanceRound(state: GameState, _winner: PlayerKey) {
   state.player1 = drawCard({ ...state.player1, currentCard: null })
   state.player2 = drawCard({ ...state.player2, currentCard: null })
 
-  state.attacker = state.attacker === 'player1' ? 'player2' : 'player1'
+  if (!tie) state.attacker = state.attacker === 'player1' ? 'player2' : 'player1'
   state.turn += 1
   state.phase = 'challenge'
   state.currentRound = { attribute: null, declinedAttributes: [], tieCount: 0, currentDefender: null }

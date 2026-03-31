@@ -200,7 +200,7 @@ function tieReplay(
   s.human = drawTop({ ...s.human, currentCard: null })
   s.cpu = drawTop({ ...s.cpu, currentCard: null })
 
-  s.attacker = s.attacker === 'human' ? 'cpu' : 'human'
+  // Attacker stays the same on a tie
   s.turn += 1
   s.phase = 'challenge'
   s.currentRound = { attribute: null, declinedAttributes: [], tieCount: 0, currentDefender: null }
