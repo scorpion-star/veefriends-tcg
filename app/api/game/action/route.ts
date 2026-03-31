@@ -229,26 +229,24 @@ function advanceRound(state: GameState, _winner: PlayerKey, tie = false) {
   state.currentRound = { attribute: null, declinedAttributes: [], tieCount: 0, currentDefender: null }
 }
 
-async function saveAndReturn(admin: ReturnType<typeof createAdminClient>, game: { id: string }, state: GameState) {
+async function saveAndReturn(
+  admin: ReturnType<typeof createAdminClient>,
+  game: { id: string; player1_id: string; player2_id: string },
+  state: GameState,
+) {
+  const winnerId = state.winner
+    ? (state.winner === 'player1' ? game.player1_id : game.player2_id)
+    : null
+
   await admin
     .from('game_sessions')
     .update({
       game_state: state,
       status: state.winner ? 'completed' : 'active',
-      winner_id: state.winner ? game.id /* placeholder */ : null,
+      winner_id: winnerId,
       updated_at: new Date().toISOString(),
     })
     .eq('id', game.id)
-
-  if (state.winner) {
-    const { data: g } = await admin.from('game_sessions').select('player1_id,player2_id').eq('id', game.id).single()
-    if (g) {
-      await admin
-        .from('game_sessions')
-        .update({ winner_id: state.winner === 'player1' ? g.player1_id : g.player2_id })
-        .eq('id', game.id)
-    }
-  }
 
   return Response.json({ success: true, gameState: state })
 }
