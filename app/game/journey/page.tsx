@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -41,6 +41,32 @@ export default function JourneyPage() {
   const [selected, setSelected] = useState<Opponent | null>(null)
   const [showDeckPicker, setShowDeckPicker] = useState(false)
   const [currentSection, setCurrentSection] = useState(1)
+  const mapAreaRef = useRef<HTMLDivElement>(null)
+  const mapImgRef = useRef<HTMLImageElement>(null)
+  const [imgBounds, setImgBounds] = useState<{ offsetLeft: number; offsetTop: number; renderedWidth: number; renderedHeight: number } | null>(null)
+
+  function computeImgBounds() {
+    const img = mapImgRef.current
+    const area = mapAreaRef.current
+    if (!img || !area || !img.naturalWidth) return
+    const aW = area.clientWidth, aH = area.clientHeight
+    const scale = Math.min(aW / img.naturalWidth, aH / img.naturalHeight)
+    setImgBounds({
+      offsetLeft: (aW - img.naturalWidth * scale) / 2,
+      offsetTop: (aH - img.naturalHeight * scale) / 2,
+      renderedWidth: img.naturalWidth * scale,
+      renderedHeight: img.naturalHeight * scale,
+    })
+  }
+
+  useEffect(() => {
+    setImgBounds(null)
+  }, [currentSection])
+
+  useEffect(() => {
+    window.addEventListener('resize', computeImgBounds)
+    return () => window.removeEventListener('resize', computeImgBounds)
+  }, []) // eslint-disable-line
 
   useEffect(() => {
     const load = async () => {
@@ -170,7 +196,7 @@ export default function JourneyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="h-screen overflow-hidden bg-gray-950 text-white flex flex-col">
       {/* Header */}
       <header className="bg-gray-900/95 border-b border-gray-800 px-4 py-3 flex items-center gap-3 shrink-0 z-20 relative">
         <Link href="/play" className="text-gray-400 hover:text-white text-sm transition">← Back</Link>
@@ -229,85 +255,87 @@ export default function JourneyPage() {
       </div>
 
       {/* Map area */}
-      <div className="flex-1 overflow-auto relative">
-        <div className="relative w-full">
-          {mapUrl ? (
-            <img
-              src={mapUrl}
-              alt={`Map ${currentSection}`}
-              className="w-full h-auto block"
-              draggable={false}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          ) : (
-            <div className="w-full bg-gray-900 flex items-center justify-center text-gray-600" style={{ minHeight: '70vh' }}>
-              <div className="text-center">
-                <p className="text-5xl mb-3">🗺</p>
-                <p className="text-gray-500 text-sm">Map {currentSection} coming soon</p>
-              </div>
+      <div ref={mapAreaRef} className="flex-1 relative overflow-hidden">
+        {mapUrl ? (
+          <img
+            ref={mapImgRef}
+            src={mapUrl}
+            alt={`Map ${currentSection}`}
+            className="absolute inset-0 w-full h-full object-contain"
+            draggable={false}
+            onLoad={computeImgBounds}
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+            <div className="text-center">
+              <p className="text-5xl mb-3">🗺</p>
+              <p className="text-gray-500 text-sm">Map {currentSection} coming soon</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Opponent nodes */}
-          {sectionOpponents.map(opponent => {
-            const flatIndex = opponents.findIndex(o => o.id === opponent.id)
-            const status = getStatus(opponent, flatIndex)
-            const x = opponent.position_x ?? 50
-            const y = opponent.position_y ?? 50
+        {/* Opponent nodes */}
+        {sectionOpponents.map(opponent => {
+          const flatIndex = opponents.findIndex(o => o.id === opponent.id)
+          const status = getStatus(opponent, flatIndex)
+          const x = opponent.position_x ?? 50
+          const y = opponent.position_y ?? 50
+          const nodeLeft = imgBounds ? `${imgBounds.offsetLeft + (x / 100) * imgBounds.renderedWidth}px` : `${x}%`
+          const nodeTop = imgBounds ? `${imgBounds.offsetTop + (y / 100) * imgBounds.renderedHeight}px` : `${y}%`
 
-            return (
-              <button
-                key={opponent.id}
-                onClick={() => handleNodeClick(opponent, status)}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 transition-transform ${
-                  status === 'locked' ? 'cursor-default' : 'hover:scale-110 active:scale-95'
-                }`}
-                style={{ left: `${x}%`, top: `${y}%` }}
-              >
-                <div className={`relative rounded-full border-4 overflow-hidden shadow-xl transition ${
-                  status === 'completed' ? 'border-green-400 shadow-green-500/40' :
-                  status === 'available'
-                    ? opponent.is_boss ? 'border-yellow-400 shadow-yellow-500/60' : 'border-white shadow-blue-400/40'
-                    : 'border-gray-600 opacity-50'
-                }`} style={{ width: opponent.is_boss ? 64 : 52, height: opponent.is_boss ? 64 : 52 }}>
-                  {opponent.avatar_url ? (
-                    <img src={opponent.avatar_url} alt={opponent.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-sm font-black text-gray-300">
-                      {opponent.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  {status === 'completed' && (
-                    <div className="absolute inset-0 bg-green-900/60 flex items-center justify-center text-xl">✅</div>
-                  )}
-                  {status === 'locked' && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-lg">🔒</div>
-                  )}
-                  {opponent.is_boss && status === 'available' && (
-                    <div className="absolute -top-1 -right-1 text-base leading-none">👑</div>
-                  )}
-                </div>
-
-                <div className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-lg max-w-[90px] text-center leading-tight ${
-                  status === 'locked' ? 'bg-gray-800/80 text-gray-500' :
-                  status === 'completed' ? 'bg-green-900/80 text-green-300' :
-                  opponent.is_boss ? 'bg-yellow-900/90 text-yellow-200' :
-                  'bg-gray-900/90 text-white'
-                }`}>
-                  {opponent.name}
-                </div>
-              </button>
-            )
-          })}
-
-          {sectionOpponents.length === 0 && mapUrl && (
-            <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
-              <div className="bg-gray-900/80 px-4 py-2 rounded-xl text-sm text-gray-400">
-                No opponents placed on this map yet
+          return (
+            <button
+              key={opponent.id}
+              onClick={() => handleNodeClick(opponent, status)}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 transition-transform ${
+                status === 'locked' ? 'cursor-default' : 'hover:scale-110 active:scale-95'
+              }`}
+              style={{ left: nodeLeft, top: nodeTop }}
+            >
+              <div className={`relative rounded-full border-4 overflow-hidden shadow-xl transition ${
+                status === 'completed' ? 'border-green-400 shadow-green-500/40' :
+                status === 'available'
+                  ? opponent.is_boss ? 'border-yellow-400 shadow-yellow-500/60' : 'border-white shadow-blue-400/40'
+                  : 'border-gray-600 opacity-50'
+              }`} style={{ width: opponent.is_boss ? 64 : 52, height: opponent.is_boss ? 64 : 52 }}>
+                {opponent.avatar_url ? (
+                  <img src={opponent.avatar_url} alt={opponent.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center text-sm font-black text-gray-300">
+                    {opponent.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                {status === 'completed' && (
+                  <div className="absolute inset-0 bg-green-900/60 flex items-center justify-center text-xl">✅</div>
+                )}
+                {status === 'locked' && (
+                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-lg">🔒</div>
+                )}
+                {opponent.is_boss && status === 'available' && (
+                  <div className="absolute -top-1 -right-1 text-base leading-none">👑</div>
+                )}
               </div>
+
+              <div className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-lg max-w-[90px] text-center leading-tight ${
+                status === 'locked' ? 'bg-gray-800/80 text-gray-500' :
+                status === 'completed' ? 'bg-green-900/80 text-green-300' :
+                opponent.is_boss ? 'bg-yellow-900/90 text-yellow-200' :
+                'bg-gray-900/90 text-white'
+              }`}>
+                {opponent.name}
+              </div>
+            </button>
+          )
+        })}
+
+        {sectionOpponents.length === 0 && mapUrl && (
+          <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
+            <div className="bg-gray-900/80 px-4 py-2 rounded-xl text-sm text-gray-400">
+              No opponents placed on this map yet
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Battle confirmation modal */}

@@ -241,7 +241,7 @@ export default function AdminJourneyPage() {
             <div className="relative rounded-2xl overflow-hidden border border-gray-700">
               {placingId && (
                 <div className="absolute inset-0 z-10 bg-blue-900/30 border-2 border-blue-400 flex items-center justify-center pointer-events-none rounded-2xl">
-                  <div className="bg-blue-900/90 text-blue-200 px-4 py-2 rounded-xl text-sm font-semibold shadow-xl">
+                  <div className="bg-blue-900/90 text-blue-200 px-4 py-2 rounded-xl text-sm font-semibold shadow-xl pointer-events-none">
                     Click on the map to place "{opponents.find(o => o.id === placingId)?.name}"
                   </div>
                 </div>
