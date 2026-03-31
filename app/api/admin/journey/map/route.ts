@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null
+  const section = Number(formData.get('section') ?? '1')
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
@@ -27,11 +28,11 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.type === 'image/png' ? 'png' : 'jpg'
-  const path = `journey/map.${ext}`
+  const path = `journey/map_${section}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   const admin = createAdminClient()
-  await admin.storage.from('avatars').remove(['journey/map.jpg', 'journey/map.png'])
+  await admin.storage.from('avatars').remove([`journey/map_${section}.jpg`, `journey/map_${section}.png`])
 
   const { error: uploadError } = await admin.storage
     .from('avatars')
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
 
   await admin
     .from('journey_settings')
-    .upsert({ key: 'map_image_url', value: mapUrl }, { onConflict: 'key' })
+    .upsert({ key: `map_${section}`, value: mapUrl }, { onConflict: 'key' })
 
-  return NextResponse.json({ mapUrl })
+  return NextResponse.json({ mapUrl, section })
 }

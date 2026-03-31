@@ -48,9 +48,11 @@ export default function AdminJourneyPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(BLANK_FORM)
   const [uploadingAvatarId, setUploadingAvatarId] = useState<string | null>(null)
-  const [mapImageUrl, setMapImageUrl] = useState<string | null>(null)
+  const [mapImages, setMapImages] = useState<Record<number, string>>({})
   const [uploadingMap, setUploadingMap] = useState(false)
   const [placingId, setPlacingId] = useState<string | null>(null)
+  const [activeMapSection, setActiveMapSection] = useState(1)
+  const TOTAL_MAPS = 10
 
   useEffect(() => {
     const load = async () => {
@@ -73,19 +75,24 @@ export default function AdminJourneyPage() {
     const res = await fetch('/api/admin/journey/settings')
     if (res.ok) {
       const d = await res.json()
-      if (d.map_image_url) setMapImageUrl(d.map_image_url)
+      const images: Record<number, string> = {}
+      for (let i = 1; i <= TOTAL_MAPS; i++) {
+        if (d[`map_${i}`]) images[i] = d[`map_${i}`]
+      }
+      setMapImages(images)
     }
   }
 
-  async function handleMapUpload(file: File) {
+  async function handleMapUpload(file: File, section: number) {
     setUploadingMap(true)
     setError(null)
     const fd = new FormData()
     fd.append('file', file)
+    fd.append('section', String(section))
     const res = await fetch('/api/admin/journey/map', { method: 'POST', body: fd })
     if (res.ok) {
       const { mapUrl } = await res.json()
-      setMapImageUrl(mapUrl)
+      setMapImages(prev => ({ ...prev, [section]: mapUrl }))
     } else {
       setError((await res.json()).error)
     }
@@ -213,17 +220,24 @@ export default function AdminJourneyPage() {
         {/* ── Map section ── */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Journey Map</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Journey Maps</h2>
+              <div className="flex items-center gap-1">
+                <button onClick={() => { setPlacingId(null); setActiveMapSection(s => Math.max(1, s - 1)) }} disabled={activeMapSection === 1} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">‹</button>
+                <span className="text-sm font-bold text-white w-16 text-center">Map {activeMapSection}/{TOTAL_MAPS}</span>
+                <button onClick={() => { setPlacingId(null); setActiveMapSection(s => Math.min(TOTAL_MAPS, s + 1)) }} disabled={activeMapSection === TOTAL_MAPS} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">›</button>
+              </div>
+            </div>
             <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-semibold transition ${
               uploadingMap ? 'bg-gray-700 opacity-50 cursor-wait' : 'bg-gray-700 hover:bg-gray-600'
             }`}>
-              {uploadingMap ? 'Uploading…' : mapImageUrl ? '↑ Replace Map' : '↑ Upload Map'}
+              {uploadingMap ? 'Uploading…' : mapImages[activeMapSection] ? '↑ Replace Map' : '↑ Upload Map'}
               <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleMapUpload(f) }} />
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleMapUpload(f, activeMapSection) }} />
             </label>
           </div>
 
-          {mapImageUrl ? (
+          {mapImages[activeMapSection] ? (
             <div className="relative rounded-2xl overflow-hidden border border-gray-700">
               {placingId && (
                 <div className="absolute inset-0 z-10 bg-blue-900/30 border-2 border-blue-400 flex items-center justify-center pointer-events-none rounded-2xl">
@@ -234,28 +248,21 @@ export default function AdminJourneyPage() {
               )}
               <img
                 ref={mapRef}
-                src={mapImageUrl}
-                alt="Journey Map"
+                src={mapImages[activeMapSection]}
+                alt={`Map ${activeMapSection}`}
                 className={`w-full h-auto block ${placingId ? 'cursor-crosshair' : ''}`}
                 onClick={handleMapClick}
                 draggable={false}
               />
-              {/* Opponent nodes on map preview */}
-              {opponents.map(o => (
-                <div
-                  key={o.id}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 ${
-                    placingId === o.id ? 'opacity-30' : ''
-                  }`}
-                  style={{ left: `${o.position_x ?? 50}%`, top: `${o.position_y ?? 50}%`, pointerEvents: 'none' }}
-                >
-                  <div className={`rounded-full overflow-hidden border-2 shadow-lg ${o.is_boss ? 'border-yellow-400' : 'border-white'}`}
-                    style={{ width: 32, height: 32 }}>
+              {/* Opponent nodes for this section only */}
+              {opponents.filter(o => (o.section ?? 1) === activeMapSection).map(o => (
+                <div key={o.id}
+                  className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 ${placingId === o.id ? 'opacity-30' : ''}`}
+                  style={{ left: `${o.position_x ?? 50}%`, top: `${o.position_y ?? 50}%`, pointerEvents: 'none' }}>
+                  <div className={`rounded-full overflow-hidden border-2 shadow-lg ${o.is_boss ? 'border-yellow-400' : 'border-white'}`} style={{ width: 32, height: 32 }}>
                     {o.avatar_url
                       ? <img src={o.avatar_url} alt={o.name} className="w-full h-full object-cover" />
-                      : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs font-black text-gray-300">
-                          {o.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
-                        </div>
+                      : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs font-black text-gray-300">{o.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
                     }
                   </div>
                   <div className="bg-gray-900/90 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap shadow">
@@ -267,7 +274,7 @@ export default function AdminJourneyPage() {
           ) : (
             <div className="border-2 border-dashed border-gray-700 rounded-2xl p-12 text-center text-gray-500">
               <p className="text-4xl mb-2">🗺</p>
-              <p className="text-sm">Upload a map image to get started</p>
+              <p className="text-sm">Upload an image for Map {activeMapSection}</p>
             </div>
           )}
 
@@ -327,9 +334,9 @@ export default function AdminJourneyPage() {
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                {mapImageUrl && (
+                {mapImages[o.section ?? 1] && (
                   <button
-                    onClick={() => setPlacingId(placingId === o.id ? null : o.id)}
+                    onClick={() => { setActiveMapSection(o.section ?? 1); setPlacingId(placingId === o.id ? null : o.id) }}
                     className={`p-2 text-sm transition rounded-lg ${placingId === o.id ? 'bg-blue-700 text-white' : 'text-gray-400 hover:text-blue-400'}`}
                     title="Place on map"
                   >

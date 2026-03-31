@@ -26,6 +26,7 @@ type Status = 'completed' | 'available' | 'locked'
 
 const DIFF_ICON: Record<Difficulty, string> = { easy: '🟢', medium: '🟡', hard: '🔴' }
 const DIFF_LABEL: Record<Difficulty, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }
+const TOTAL_MAPS = 10
 
 export default function JourneyPage() {
   const supabase = useMemo(() => createClient(), [])
@@ -35,10 +36,11 @@ export default function JourneyPage() {
   const [completedIds, setCompletedIds] = useState<string[]>([])
   const [decks, setDecks] = useState<Deck[]>([])
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
-  const [mapImageUrl, setMapImageUrl] = useState<string | null>(null)
+  const [mapImages, setMapImages] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Opponent | null>(null)
   const [showDeckPicker, setShowDeckPicker] = useState(false)
+  const [currentSection, setCurrentSection] = useState(1)
 
   useEffect(() => {
     const load = async () => {
@@ -52,17 +54,28 @@ export default function JourneyPage() {
         supabase.from('decks').select('id, name, card_ids').eq('user_id', user.id).order('created_at', { ascending: false }),
       ])
 
+      let loadedOpponents: Opponent[] = []
+      let loadedCompleted: string[] = []
+
       if (opponentsRes.ok) {
         const d = await opponentsRes.json()
-        setOpponents(d.opponents ?? [])
+        loadedOpponents = d.opponents ?? []
+        setOpponents(loadedOpponents)
       }
       if (progressRes.ok) {
         const d = await progressRes.json()
-        setCompletedIds(d.completedOpponentIds ?? [])
+        loadedCompleted = d.completedOpponentIds ?? []
+        setCompletedIds(loadedCompleted)
       }
       if (settingsRes.ok) {
         const d = await settingsRes.json()
-        if (d.map_image_url) setMapImageUrl(d.map_image_url)
+        const images: Record<number, string> = {}
+        for (let i = 1; i <= TOTAL_MAPS; i++) {
+          if (d[`map_${i}`]) images[i] = d[`map_${i}`]
+        }
+        // Fallback: use /journey-map.png for section 1 if no upload yet
+        if (!images[1]) images[1] = '/journey-map.png'
+        setMapImages(images)
       }
       if (decksRes.data) {
         const valid = (decksRes.data as Deck[]).filter(d => d.card_ids.length === 20)
@@ -70,10 +83,16 @@ export default function JourneyPage() {
         if (valid.length === 1) setSelectedDeckId(valid[0].id)
       }
 
+      // Auto-navigate to the player's current active section
+      if (loadedOpponents.length > 0) {
+        const activeSection = getActiveSection(loadedOpponents, loadedCompleted)
+        setCurrentSection(activeSection)
+      }
+
       setLoading(false)
     }
     load()
-  }, [supabase, router])
+  }, [supabase, router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function getStatus(opponent: Opponent, flatIndex: number): Status {
     if (completedIds.includes(opponent.id)) return 'completed'
@@ -83,8 +102,32 @@ export default function JourneyPage() {
     return 'locked'
   }
 
+  // Returns the lowest section that has any available (not yet beaten) opponent
+  function getActiveSection(opps: Opponent[], completed: string[]): number {
+    for (let i = 0; i < opps.length; i++) {
+      const o = opps[i]
+      if (!completed.includes(o.id)) {
+        // available if first or previous completed
+        if (i === 0 || completed.includes(opps[i - 1].id)) {
+          return o.section ?? 1
+        }
+      }
+    }
+    // All done — stay on last section
+    return opps[opps.length - 1]?.section ?? 1
+  }
+
+  function isSectionUnlocked(section: number): boolean {
+    if (section === 1) return true
+    // Unlocked if all opponents in the previous section are completed
+    const prevOpponents = opponents.filter(o => (o.section ?? 1) === section - 1)
+    if (prevOpponents.length === 0) return true
+    return prevOpponents.every(o => completedIds.includes(o.id))
+  }
+
   function handleNodeClick(opponent: Opponent, status: Status) {
     if (status === 'locked') return
+    setShowDeckPicker(false)
     setSelected(opponent)
   }
 
@@ -109,6 +152,11 @@ export default function JourneyPage() {
   }
 
   const totalCoins = opponents.filter(o => completedIds.includes(o.id)).reduce((s, o) => s + o.coins_reward, 0)
+  const sectionOpponents = opponents.filter(o => (o.section ?? 1) === currentSection)
+  const mapUrl = mapImages[currentSection] ?? null
+
+  // Section progress
+  const sectionCompleted = sectionOpponents.filter(o => completedIds.includes(o.id)).length
 
   if (loading) {
     return (
@@ -124,33 +172,29 @@ export default function JourneyPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
       {/* Header */}
-      <header className="bg-gray-900/90 border-b border-gray-800 px-6 py-3 flex items-center gap-4 shrink-0 z-20 relative">
+      <header className="bg-gray-900/95 border-b border-gray-800 px-4 py-3 flex items-center gap-3 shrink-0 z-20 relative">
         <Link href="/play" className="text-gray-400 hover:text-white text-sm transition">← Back</Link>
-        <h1 className="text-xl font-bold flex-1">Single Player Journey</h1>
+        <h1 className="text-lg font-bold flex-1">Single Player Journey</h1>
         <div className="flex items-center gap-1.5 text-yellow-300 text-sm font-semibold">
-          <CoinIcon size={16} />
-          <span>{totalCoins} earned</span>
+          <CoinIcon size={15} />
+          <span>{totalCoins}</span>
         </div>
       </header>
 
-      {/* Deck selector bar (only when multiple decks) */}
+      {/* Deck selector bar */}
       {decks.length > 1 && (
         <div className="bg-gray-900 border-b border-gray-800 px-4 py-2 flex items-center gap-3 shrink-0 z-20 relative overflow-x-auto">
           <span className="text-xs text-gray-500 uppercase tracking-wider shrink-0">Deck:</span>
           {decks.map(d => (
-            <button
-              key={d.id}
-              onClick={() => setSelectedDeckId(d.id)}
+            <button key={d.id} onClick={() => setSelectedDeckId(d.id)}
               className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition shrink-0 ${
                 selectedDeckId === d.id ? 'border-blue-500 bg-blue-900/30 text-white' : 'border-gray-700 text-gray-400 hover:border-gray-600'
-              }`}
-            >
+              }`}>
               {d.name}
             </button>
           ))}
         </div>
       )}
-
       {decks.length === 0 && (
         <div className="bg-amber-950/60 border-b border-amber-800 px-6 py-3 text-sm text-amber-300 flex items-center gap-3 shrink-0">
           <span>You need a 20-card deck to play.</span>
@@ -158,28 +202,55 @@ export default function JourneyPage() {
         </div>
       )}
 
+      {/* Map navigation bar */}
+      <div className="bg-gray-900/80 border-b border-gray-800 px-4 py-2 flex items-center justify-between shrink-0 z-20 relative">
+        <button
+          onClick={() => setCurrentSection(s => Math.max(1, s - 1))}
+          disabled={currentSection === 1}
+          className="p-2 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg leading-none"
+        >
+          ‹
+        </button>
+
+        <div className="text-center">
+          <p className="text-sm font-bold text-white">Map {currentSection} <span className="text-gray-500 font-normal">of {TOTAL_MAPS}</span></p>
+          {sectionOpponents.length > 0 && (
+            <p className="text-xs text-gray-500">{sectionCompleted}/{sectionOpponents.length} defeated</p>
+          )}
+        </div>
+
+        <button
+          onClick={() => setCurrentSection(s => Math.min(TOTAL_MAPS, s + 1))}
+          disabled={currentSection === TOTAL_MAPS || !isSectionUnlocked(currentSection + 1)}
+          className="p-2 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg leading-none"
+        >
+          ›
+        </button>
+      </div>
+
       {/* Map area */}
       <div className="flex-1 overflow-auto relative">
-        <div className="relative w-full" style={{ minHeight: '100%' }}>
-          {/* Map background */}
-          {mapImageUrl ? (
+        <div className="relative w-full">
+          {mapUrl ? (
             <img
-              src={mapImageUrl}
-              alt="Journey Map"
+              src={mapUrl}
+              alt={`Map ${currentSection}`}
               className="w-full h-auto block"
               draggable={false}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           ) : (
             <div className="w-full bg-gray-900 flex items-center justify-center text-gray-600" style={{ minHeight: '70vh' }}>
               <div className="text-center">
                 <p className="text-5xl mb-3">🗺</p>
-                <p className="text-gray-500 text-sm">Map coming soon</p>
+                <p className="text-gray-500 text-sm">Map {currentSection} coming soon</p>
               </div>
             </div>
           )}
 
           {/* Opponent nodes */}
-          {opponents.map((opponent, flatIndex) => {
+          {sectionOpponents.map(opponent => {
+            const flatIndex = opponents.findIndex(o => o.id === opponent.id)
             const status = getStatus(opponent, flatIndex)
             const x = opponent.position_x ?? 50
             const y = opponent.position_y ?? 50
@@ -188,21 +259,17 @@ export default function JourneyPage() {
               <button
                 key={opponent.id}
                 onClick={() => handleNodeClick(opponent, status)}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 group transition-transform ${
+                className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 transition-transform ${
                   status === 'locked' ? 'cursor-default' : 'hover:scale-110 active:scale-95'
                 }`}
                 style={{ left: `${x}%`, top: `${y}%` }}
               >
-                {/* Avatar ring */}
                 <div className={`relative rounded-full border-4 overflow-hidden shadow-xl transition ${
                   status === 'completed' ? 'border-green-400 shadow-green-500/40' :
-                  status === 'available' ? opponent.is_boss
-                    ? 'border-yellow-400 shadow-yellow-500/60 animate-pulse-slow'
-                    : 'border-white shadow-blue-400/40'
-                  : 'border-gray-600 opacity-50'
-                }`}
-                  style={{ width: opponent.is_boss ? 64 : 52, height: opponent.is_boss ? 64 : 52 }}
-                >
+                  status === 'available'
+                    ? opponent.is_boss ? 'border-yellow-400 shadow-yellow-500/60' : 'border-white shadow-blue-400/40'
+                    : 'border-gray-600 opacity-50'
+                }`} style={{ width: opponent.is_boss ? 64 : 52, height: opponent.is_boss ? 64 : 52 }}>
                   {opponent.avatar_url ? (
                     <img src={opponent.avatar_url} alt={opponent.name} className="w-full h-full object-cover" />
                   ) : (
@@ -210,20 +277,17 @@ export default function JourneyPage() {
                       {opponent.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                   )}
-
-                  {/* Status overlay */}
                   {status === 'completed' && (
                     <div className="absolute inset-0 bg-green-900/60 flex items-center justify-center text-xl">✅</div>
                   )}
                   {status === 'locked' && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-lg">🔒</div>
                   )}
-                  {opponent.is_boss && status !== 'locked' && status !== 'completed' && (
+                  {opponent.is_boss && status === 'available' && (
                     <div className="absolute -top-1 -right-1 text-base leading-none">👑</div>
                   )}
                 </div>
 
-                {/* Name label */}
                 <div className={`px-2 py-0.5 rounded-full text-xs font-bold shadow-lg max-w-[90px] text-center leading-tight ${
                   status === 'locked' ? 'bg-gray-800/80 text-gray-500' :
                   status === 'completed' ? 'bg-green-900/80 text-green-300' :
@@ -235,22 +299,27 @@ export default function JourneyPage() {
               </button>
             )
           })}
+
+          {sectionOpponents.length === 0 && mapUrl && (
+            <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
+              <div className="bg-gray-900/80 px-4 py-2 rounded-xl text-sm text-gray-400">
+                No opponents placed on this map yet
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Battle confirmation modal */}
       {selected && (
-        <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-6"
-          onClick={() => { setSelected(null); setShowDeckPicker(false) }}
-        >
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-6"
+          onClick={() => { setSelected(null); setShowDeckPicker(false) }}>
           <div
             className={`bg-gray-900 rounded-3xl border-2 p-8 max-w-sm w-full text-center shadow-2xl ${
               selected.is_boss ? 'border-yellow-500 shadow-yellow-900/50' : 'border-gray-700'
             }`}
             onClick={e => e.stopPropagation()}
           >
-            {/* Opponent avatar */}
             <div className="flex justify-center mb-4">
               <div className={`relative rounded-full overflow-hidden border-4 shadow-xl ${
                 selected.is_boss ? 'border-yellow-400 shadow-yellow-500/40' : 'border-gray-500'
@@ -284,40 +353,30 @@ export default function JourneyPage() {
               Ready for the challenge?
             </p>
 
-            {/* Deck picker (shown inline when needed) */}
-            {showDeckPicker && (
-              <div className="mb-6 space-y-2 text-left">
+            {showDeckPicker ? (
+              <div className="space-y-2 text-left mb-2">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Choose your deck</p>
                 {decks.map(d => (
-                  <button
-                    key={d.id}
+                  <button key={d.id}
                     onClick={() => { setSelectedDeckId(d.id); launch(selected, d.id) }}
-                    className="w-full text-left px-4 py-3 rounded-xl border-2 border-gray-700 bg-gray-800 hover:border-blue-500 transition"
-                  >
+                    className="w-full text-left px-4 py-3 rounded-xl border-2 border-gray-700 bg-gray-800 hover:border-blue-500 transition">
                     <p className="font-bold text-sm">{d.name}</p>
                     <p className="text-xs text-gray-500">{d.card_ids.length} cards</p>
                   </button>
                 ))}
               </div>
-            )}
-
-            {!showDeckPicker && (
+            ) : (
               <div className="flex gap-3">
-                <button
-                  onClick={() => setSelected(null)}
-                  className="flex-1 py-3 rounded-2xl bg-gray-800 hover:bg-gray-700 font-semibold transition text-gray-300"
-                >
+                <button onClick={() => setSelected(null)}
+                  className="flex-1 py-3 rounded-2xl bg-gray-800 hover:bg-gray-700 font-semibold transition text-gray-300">
                   Not Yet
                 </button>
-                <button
-                  onClick={handleBattle}
-                  disabled={decks.length === 0}
+                <button onClick={handleBattle} disabled={decks.length === 0}
                   className={`flex-1 py-3 rounded-2xl font-black text-lg transition disabled:opacity-40 ${
                     selected.is_boss
                       ? 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-lg shadow-yellow-900/50'
                       : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50'
-                  }`}
-                >
+                  }`}>
                   ⚔ Battle!
                 </button>
               </div>
