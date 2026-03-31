@@ -50,7 +50,7 @@ export default function JourneyPage() {
     const area = mapAreaRef.current
     if (!img || !area || !img.naturalWidth) return
     const aW = area.clientWidth, aH = area.clientHeight
-    const scale = Math.min(aW / img.naturalWidth, aH / img.naturalHeight)
+    const scale = Math.max(aW / img.naturalWidth, aH / img.naturalHeight)
     setImgBounds({
       offsetLeft: (aW - img.naturalWidth * scale) / 2,
       offsetTop: (aH - img.naturalHeight * scale) / 2,
@@ -197,61 +197,55 @@ export default function JourneyPage() {
 
   return (
     <div className="h-screen overflow-hidden bg-gray-950 text-white flex flex-col">
-      {/* Header */}
-      <header className="bg-gray-900/95 border-b border-gray-800 px-4 py-3 flex items-center gap-3 shrink-0 z-20 relative">
-        <Link href="/play" className="text-gray-400 hover:text-white text-sm transition">← Back</Link>
-        <h1 className="text-lg font-bold flex-1">Single Player Journey</h1>
-        <div className="flex items-center gap-1.5 text-yellow-300 text-sm font-semibold">
-          <CoinIcon size={15} />
-          <span>{totalCoins}</span>
-        </div>
-      </header>
+      {/* Top bar: back, map nav, coins, deck picker */}
+      <div className="shrink-0 z-20 relative">
+        <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-3 py-2 flex items-center gap-2">
+          <Link href="/play" className="text-gray-400 hover:text-white text-sm transition px-1">←</Link>
 
-      {/* Deck selector bar */}
-      {decks.length > 1 && (
-        <div className="bg-gray-900 border-b border-gray-800 px-4 py-2 flex items-center gap-3 shrink-0 z-20 relative overflow-x-auto">
-          <span className="text-xs text-gray-500 uppercase tracking-wider shrink-0">Deck:</span>
-          {decks.map(d => (
-            <button key={d.id} onClick={() => setSelectedDeckId(d.id)}
-              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition shrink-0 ${
-                selectedDeckId === d.id ? 'border-blue-500 bg-blue-900/30 text-white' : 'border-gray-700 text-gray-400 hover:border-gray-600'
-              }`}>
-              {d.name}
-            </button>
-          ))}
-        </div>
-      )}
-      {decks.length === 0 && (
-        <div className="bg-amber-950/60 border-b border-amber-800 px-6 py-3 text-sm text-amber-300 flex items-center gap-3 shrink-0">
-          <span>You need a 20-card deck to play.</span>
-          <Link href="/deck-builder" className="underline font-semibold hover:text-white transition">Build one →</Link>
-        </div>
-      )}
+          <button
+            onClick={() => setCurrentSection(s => Math.max(1, s - 1))}
+            disabled={currentSection === 1}
+            className="p-1.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg leading-none"
+          >‹</button>
 
-      {/* Map navigation bar */}
-      <div className="bg-gray-900/80 border-b border-gray-800 px-4 py-2 flex items-center justify-between shrink-0 z-20 relative">
-        <button
-          onClick={() => setCurrentSection(s => Math.max(1, s - 1))}
-          disabled={currentSection === 1}
-          className="p-2 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg leading-none"
-        >
-          ‹
-        </button>
+          <div className="flex-1 text-center">
+            <p className="text-sm font-bold text-white leading-tight">Map {currentSection} <span className="text-gray-500 font-normal">/ {TOTAL_MAPS}</span></p>
+            {sectionOpponents.length > 0 && (
+              <p className="text-xs text-gray-500 leading-tight">{sectionCompleted}/{sectionOpponents.length} defeated</p>
+            )}
+          </div>
 
-        <div className="text-center">
-          <p className="text-sm font-bold text-white">Map {currentSection} <span className="text-gray-500 font-normal">of {TOTAL_MAPS}</span></p>
-          {sectionOpponents.length > 0 && (
-            <p className="text-xs text-gray-500">{sectionCompleted}/{sectionOpponents.length} defeated</p>
-          )}
+          <button
+            onClick={() => setCurrentSection(s => Math.min(TOTAL_MAPS, s + 1))}
+            disabled={currentSection === TOTAL_MAPS || !isSectionUnlocked(currentSection + 1)}
+            className="p-1.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg leading-none"
+          >›</button>
+
+          <div className="flex items-center gap-1 text-yellow-300 text-sm font-semibold px-1">
+            <CoinIcon size={14} />
+            <span>{totalCoins}</span>
+          </div>
         </div>
 
-        <button
-          onClick={() => setCurrentSection(s => Math.min(TOTAL_MAPS, s + 1))}
-          disabled={currentSection === TOTAL_MAPS || !isSectionUnlocked(currentSection + 1)}
-          className="p-2 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg leading-none"
-        >
-          ›
-        </button>
+        {decks.length > 1 && (
+          <div className="bg-gray-900 border-b border-gray-800 px-3 py-1.5 flex items-center gap-2 overflow-x-auto">
+            <span className="text-xs text-gray-500 uppercase tracking-wider shrink-0">Deck:</span>
+            {decks.map(d => (
+              <button key={d.id} onClick={() => setSelectedDeckId(d.id)}
+                className={`px-3 py-1 rounded-lg border text-xs font-medium transition shrink-0 ${
+                  selectedDeckId === d.id ? 'border-blue-500 bg-blue-900/30 text-white' : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                }`}>
+                {d.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {decks.length === 0 && (
+          <div className="bg-amber-950/60 border-b border-amber-800 px-4 py-2 text-xs text-amber-300 flex items-center gap-3">
+            <span>You need a 20-card deck to play.</span>
+            <Link href="/deck-builder" className="underline font-semibold hover:text-white transition">Build one →</Link>
+          </div>
+        )}
       </div>
 
       {/* Map area */}
@@ -261,7 +255,7 @@ export default function JourneyPage() {
             ref={mapImgRef}
             src={mapUrl}
             alt={`Map ${currentSection}`}
-            className="absolute inset-0 w-full h-full object-contain"
+            className="absolute inset-0 w-full h-full object-cover"
             draggable={false}
             onLoad={computeImgBounds}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
