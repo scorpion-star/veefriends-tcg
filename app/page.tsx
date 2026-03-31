@@ -94,7 +94,6 @@ export default function Home() {
         <div className="flex justify-center px-6 py-12">
         <div className="relative z-10 text-center max-w-md w-full">
           <SparkleTitle>VeeFriends TCG</SparkleTitle>
-          <p className="text-gray-300 mt-4 mb-8 drop-shadow">Compete & Collect — Series 2</p>
           <div className="flex flex-col items-center gap-2 mb-8">
             <AvatarUpload
               userId={user.id}
