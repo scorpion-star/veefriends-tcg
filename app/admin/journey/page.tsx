@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -38,8 +38,6 @@ function AvatarOrInitials({ url, name, size = 48 }: { url: string | null; name: 
 export default function AdminJourneyPage() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
-  const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapSectionRef = useRef<HTMLDivElement>(null)
 
   const [opponents, setOpponents] = useState<Opponent[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,9 +49,8 @@ export default function AdminJourneyPage() {
   const [uploadingAvatarId, setUploadingAvatarId] = useState<string | null>(null)
   const [mapImages, setMapImages] = useState<Record<number, string>>({})
   const [uploadingMap, setUploadingMap] = useState(false)
-  const [placingOpponent, setPlacingOpponent] = useState<Opponent | null>(null)
-  const [justSavedId, setJustSavedId] = useState<string | null>(null)
   const [activeMapSection, setActiveMapSection] = useState(1)
+  const [savedId, setSavedId] = useState<string | null>(null)
   const TOTAL_MAPS = 10
 
   useEffect(() => {
@@ -102,32 +99,15 @@ export default function AdminJourneyPage() {
     setUploadingMap(false)
   }
 
-  // Step 1: admin clicks "Place on Map" next to an opponent
-  function startPlacing(o: Opponent) {
-    setPlacingOpponent(o)
-    setActiveMapSection(o.section ?? 1)
-    // Scroll the map into view
-    setTimeout(() => mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
-  }
-
-  // Step 2: admin clicks anywhere on the map image
-  function handleMapClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (!placingOpponent || !mapContainerRef.current) return
-    const rect = mapContainerRef.current.getBoundingClientRect()
-    const x = Math.max(0, Math.min(100, Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10))
-    const y = Math.max(0, Math.min(100, Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10))
-
-    const id = placingOpponent.id
+  async function savePosition(id: string, x: number, y: number) {
     setOpponents(prev => prev.map(o => o.id === id ? { ...o, position_x: x, position_y: y } : o))
-    setPlacingOpponent(null)
-    setJustSavedId(id)
-    setTimeout(() => setJustSavedId(null), 2000)
-
-    fetch('/api/admin/journey', {
+    await fetch('/api/admin/journey', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, position_x: x, position_y: y }),
     })
+    setSavedId(id)
+    setTimeout(() => setSavedId(null), 1500)
   }
 
   async function handleSave() {
@@ -231,8 +211,12 @@ export default function AdminJourneyPage() {
 
         {/* ── Opponent list ── */}
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Opponents</h2>
-          <p className="text-xs text-gray-500">To place an opponent on the map: click <strong className="text-gray-300">Place on Map</strong> next to their name, then click where you want them on the map below.</p>
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Opponents</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Set <strong className="text-gray-300">X%</strong> (left→right) and <strong className="text-gray-300">Y%</strong> (top→bottom) to position each opponent on the map. 0 = far left/top, 100 = far right/bottom, 50 = center. Press Enter or click away to save.
+            </p>
+          </div>
 
           {opponents.length === 0 && !showForm && (
             <div className="text-center text-gray-500 py-12 bg-gray-900 rounded-2xl border border-gray-800">
@@ -242,73 +226,96 @@ export default function AdminJourneyPage() {
           )}
 
           {opponents.map((o, index) => (
-            <div key={o.id} className={`bg-gray-900 border rounded-2xl p-4 flex items-center gap-4 ${
-              placingOpponent?.id === o.id ? 'border-blue-500 ring-2 ring-blue-500/30' :
-              justSavedId === o.id ? 'border-green-500' :
-              o.is_boss ? 'border-yellow-600/50' : 'border-gray-800'
+            <div key={o.id} className={`bg-gray-900 border rounded-2xl p-4 flex flex-col gap-3 ${
+              savedId === o.id ? 'border-green-500/70' : o.is_boss ? 'border-yellow-600/50' : 'border-gray-800'
             }`}>
-              {/* Avatar + upload */}
-              <div className="relative group shrink-0">
-                <AvatarOrInitials url={o.avatar_url} name={o.name} size={52} />
-                <button
-                  onClick={() => {
-                    const input = document.createElement('input')
-                    input.type = 'file'
-                    input.accept = 'image/jpeg,image/png,image/webp'
-                    input.onchange = e => {
-                      const file = (e.target as HTMLInputElement).files?.[0]
-                      if (file) handleAvatarUpload(o, file)
-                    }
-                    input.click()
-                  }}
-                  className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-semibold"
-                >
-                  {uploadingAvatarId === o.id ? '…' : '📷'}
-                </button>
+              <div className="flex items-center gap-4">
+                {/* Avatar + upload */}
+                <div className="relative group shrink-0">
+                  <AvatarOrInitials url={o.avatar_url} name={o.name} size={52} />
+                  <button
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'image/jpeg,image/png,image/webp'
+                      input.onchange = e => {
+                        const file = (e.target as HTMLInputElement).files?.[0]
+                        if (file) handleAvatarUpload(o, file)
+                      }
+                      input.click()
+                    }}
+                    className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-semibold"
+                  >
+                    {uploadingAvatarId === o.id ? '…' : '📷'}
+                  </button>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold">{o.name}</span>
+                    {o.is_boss && <span className="text-xs bg-yellow-800/60 text-yellow-300 px-2 py-0.5 rounded-full">BOSS</span>}
+                    {savedId === o.id && <span className="text-xs text-green-400 font-semibold">✓ Saved</span>}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-3 flex-wrap">
+                    <span>{DIFF_ICON[o.difficulty]} {o.difficulty}</span>
+                    <span>🪙 {o.coins_reward}</span>
+                    <span className="text-gray-600">Map {o.section ?? 1} · #{index + 1}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
+                  <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
+                  <button onClick={() => openEdit(o)} className="p-2 text-gray-500 hover:text-blue-400 transition">✎</button>
+                  <button onClick={() => handleDelete(o.id)} className="p-2 text-gray-500 hover:text-red-400 transition">✕</button>
+                </div>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold">{o.name}</span>
-                  {o.is_boss && <span className="text-xs bg-yellow-800/60 text-yellow-300 px-2 py-0.5 rounded-full">BOSS</span>}
-                  {justSavedId === o.id && <span className="text-xs text-green-400 font-semibold">✓ Placed!</span>}
-                </div>
-                <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-3 flex-wrap">
-                  <span>{DIFF_ICON[o.difficulty]} {o.difficulty}</span>
-                  <span>🪙 {o.coins_reward}</span>
-                  <span className="text-gray-600">Map {o.section ?? 1} · #{index + 1}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+              {/* Position inputs */}
+              <div className="flex items-center gap-3 bg-gray-800 rounded-xl px-4 py-2.5">
+                <span className="text-xs text-gray-400 uppercase tracking-wider shrink-0">Position on map:</span>
+                <label className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-400">X%</span>
+                  <input
+                    type="number" min={0} max={100} step={1}
+                    defaultValue={Math.round(o.position_x ?? 50)}
+                    key={`${o.id}-x-${o.position_x}`}
+                    className="w-16 bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:border-blue-500"
+                    onBlur={e => savePosition(o.id, Number(e.target.value), o.position_y ?? 50)}
+                    onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                  />
+                </label>
+                <label className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-400">Y%</span>
+                  <input
+                    type="number" min={0} max={100} step={1}
+                    defaultValue={Math.round(o.position_y ?? 50)}
+                    key={`${o.id}-y-${o.position_y}`}
+                    className="w-16 bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:border-blue-500"
+                    onBlur={e => savePosition(o.id, o.position_x ?? 50, Number(e.target.value))}
+                    onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                  />
+                </label>
                 <button
-                  onClick={() => placingOpponent?.id === o.id ? setPlacingOpponent(null) : startPlacing(o)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-                    placingOpponent?.id === o.id
-                      ? 'bg-blue-700 text-white'
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                  }`}
+                  onClick={() => setActiveMapSection(o.section ?? 1)}
+                  className="ml-auto text-xs text-gray-400 hover:text-white transition underline"
                 >
-                  {placingOpponent?.id === o.id ? '✕ Cancel' : 'Place on Map'}
+                  Preview on map ↓
                 </button>
-                <button onClick={() => handleMove(o.id, 'up')} disabled={index === 0} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↑</button>
-                <button onClick={() => handleMove(o.id, 'down')} disabled={index === opponents.length - 1} className="p-2 text-gray-500 hover:text-white disabled:opacity-20 transition">↓</button>
-                <button onClick={() => openEdit(o)} className="p-2 text-gray-500 hover:text-blue-400 transition">✎</button>
-                <button onClick={() => handleDelete(o.id)} className="p-2 text-gray-500 hover:text-red-400 transition">✕</button>
               </div>
             </div>
           ))}
         </section>
 
-        {/* ── Map section ── */}
-        <section ref={mapSectionRef}>
+        {/* ── Map preview ── */}
+        <section>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Journey Map</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Map Preview</h2>
               <div className="flex items-center gap-1">
-                <button onClick={() => { setPlacingOpponent(null); setActiveMapSection(s => Math.max(1, s - 1)) }} disabled={activeMapSection === 1} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">‹</button>
+                <button onClick={() => setActiveMapSection(s => Math.max(1, s - 1))} disabled={activeMapSection === 1} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">‹</button>
                 <span className="text-sm font-bold text-white w-16 text-center">Map {activeMapSection}/{TOTAL_MAPS}</span>
-                <button onClick={() => { setPlacingOpponent(null); setActiveMapSection(s => Math.min(TOTAL_MAPS, s + 1)) }} disabled={activeMapSection === TOTAL_MAPS} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">›</button>
+                <button onClick={() => setActiveMapSection(s => Math.min(TOTAL_MAPS, s + 1))} disabled={activeMapSection === TOTAL_MAPS} className="px-2 py-0.5 text-gray-400 hover:text-white disabled:opacity-20 transition text-lg">›</button>
               </div>
             </div>
             <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-semibold transition ${
@@ -320,60 +327,29 @@ export default function AdminJourneyPage() {
             </label>
           </div>
 
-          {/* Placement instructions banner */}
-          {placingOpponent && (placingOpponent.section ?? 1) === activeMapSection && (
-            <div className="mb-2 bg-blue-900/60 border border-blue-500 rounded-xl px-4 py-3 text-sm text-blue-200 flex items-center gap-3">
-              <span className="text-2xl">👇</span>
-              <div>
-                <p className="font-bold">Click anywhere on the map to place <span className="text-white">{placingOpponent.name}</span></p>
-                <p className="text-xs text-blue-300 mt-0.5">The avatar will appear wherever you click.</p>
-              </div>
-              <button onClick={() => setPlacingOpponent(null)} className="ml-auto text-blue-400 hover:text-white text-xs underline">Cancel</button>
-            </div>
-          )}
-          {placingOpponent && (placingOpponent.section ?? 1) !== activeMapSection && (
-            <div className="mb-2 bg-yellow-900/60 border border-yellow-600 rounded-xl px-4 py-3 text-sm text-yellow-200">
-              <span className="font-bold">{placingOpponent.name}</span> is on Map {placingOpponent.section ?? 1}.{' '}
-              <button onClick={() => setActiveMapSection(placingOpponent.section ?? 1)} className="underline font-semibold hover:text-white">Switch to Map {placingOpponent.section ?? 1} →</button>
-            </div>
-          )}
-
           {mapImages[activeMapSection] ? (
-            <div
-              ref={mapContainerRef}
-              onClick={handleMapClick}
-              className={`relative rounded-2xl overflow-hidden border select-none ${
-                placingOpponent && (placingOpponent.section ?? 1) === activeMapSection
-                  ? 'border-blue-500 cursor-crosshair ring-2 ring-blue-500/40'
-                  : 'border-gray-700 cursor-default'
-              }`}
-            >
+            <div className="relative rounded-2xl overflow-hidden border border-gray-700">
               <img
                 src={mapImages[activeMapSection]}
                 alt={`Map ${activeMapSection}`}
                 className="w-full h-auto block pointer-events-none"
                 draggable={false}
               />
-              {/* Opponent nodes preview */}
               {opponents.filter(o => (o.section ?? 1) === activeMapSection).map(o => (
                 <div
                   key={o.id}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 pointer-events-none transition-opacity ${
-                    placingOpponent?.id === o.id ? 'opacity-30' : 'opacity-100'
-                  }`}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 pointer-events-none"
                   style={{ left: `${o.position_x ?? 50}%`, top: `${o.position_y ?? 50}%` }}
                 >
                   <div className={`rounded-full overflow-hidden border-2 shadow-lg ${
-                    justSavedId === o.id ? 'border-green-400' : o.is_boss ? 'border-yellow-400' : 'border-white'
+                    savedId === o.id ? 'border-green-400' : o.is_boss ? 'border-yellow-400' : 'border-white'
                   }`} style={{ width: 36, height: 36 }}>
                     {o.avatar_url
                       ? <img src={o.avatar_url} alt={o.name} className="w-full h-full object-cover" />
                       : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs font-black text-gray-300">{o.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
                     }
                   </div>
-                  <div className={`text-xs px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap shadow ${
-                    justSavedId === o.id ? 'bg-green-800/90 text-green-200' : 'bg-gray-900/90 text-white'
-                  }`}>
+                  <div className="bg-gray-900/90 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap shadow">
                     {o.name.split(' ')[0]}
                   </div>
                 </div>
@@ -382,7 +358,7 @@ export default function AdminJourneyPage() {
           ) : (
             <div className="border-2 border-dashed border-gray-700 rounded-2xl p-12 text-center text-gray-500">
               <p className="text-4xl mb-2">🗺</p>
-              <p className="text-sm">Upload an image for Map {activeMapSection} first</p>
+              <p className="text-sm">Upload an image for Map {activeMapSection}</p>
             </div>
           )}
         </section>
