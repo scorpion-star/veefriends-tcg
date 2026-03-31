@@ -188,10 +188,12 @@ export default function GameRoomPage() {
       if (data) {
         setSession(prev => {
           if (!prev) return data as GameSession
-          const prevTurn = prev.game_state?.turn
-          const nextTurn = (data as GameSession).game_state?.turn
           const prevPhase = prev.game_state?.phase
           const nextPhase = (data as GameSession).game_state?.phase
+          // Never allow a stale read to revert out of game_over
+          if (prevPhase === 'game_over' && nextPhase !== 'game_over') return prev
+          const prevTurn = prev.game_state?.turn
+          const nextTurn = (data as GameSession).game_state?.turn
           const prevDefender = prev.game_state?.currentRound?.currentDefender
           const nextDefender = (data as GameSession).game_state?.currentRound?.currentDefender
           const prevAttr = prev.game_state?.currentRound?.attribute
@@ -217,7 +219,11 @@ export default function GameRoomPage() {
         filter: `id=eq.${gameId}`,
       }, async (payload) => {
         const updated = payload.new as GameSession
-        setSession(updated)
+        setSession(prev => {
+          // Never allow a stale realtime event to revert out of game_over
+          if (prev?.game_state?.phase === 'game_over' && updated.game_state?.phase !== 'game_over') return prev
+          return updated
+        })
         // Load any new cards not yet in our map
         const gs = updated.game_state
         const missing = new Set<number>()
