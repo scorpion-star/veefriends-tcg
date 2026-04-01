@@ -185,12 +185,12 @@ export default function CoreCard({
         <div className={`absolute inset-0 bg-gradient-to-b ${t.bg} rounded-3xl shadow-2xl overflow-hidden border-[10px] ${t.border}`}>
 
           {/* Banner */}
-          <div className={`bg-gradient-to-r ${t.banner} py-1.5 text-center border-b-4 ${t.border}`}>
-            <p className="text-base font-black text-white tracking-[4px] drop-shadow">VEE FRIENDS</p>
+          <div className={`bg-gradient-to-r ${t.banner} py-1 text-center border-b-4 ${t.border}`}>
+            <p className="text-base font-black text-white drop-shadow">VeeFriends</p>
           </div>
 
           {/* Art frame */}
-          <div className={`mx-3 mt-2 rounded-2xl overflow-hidden border-4 ${t.frame} shadow-inner bg-black/40 relative`} style={{ height: 238 }}>
+          <div className={`mx-3 mt-1 rounded-2xl overflow-hidden border-4 ${t.frame} shadow-inner bg-black/40 relative`} style={{ height: 262 }}>
             {imageUrl
               ? <img src={imageUrl} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🃏</div>
@@ -204,23 +204,23 @@ export default function CoreCard({
           </div>
 
           {/* Character name */}
-          <div className="px-3 mt-2 text-center">
+          <div className="px-3 mt-1 text-center">
             <p className="text-[22px] font-black text-white drop-shadow-md leading-tight line-clamp-1">{name}</p>
           </div>
 
           {/* Stats — Aura / Skill / Stamina */}
-          <div className="px-3 mt-2 flex gap-2">
-            <div className="flex-1 bg-white/90 rounded-xl py-3 border-2 border-red-500 text-center shadow-md">
+          <div className="px-3 mt-1 flex gap-2">
+            <div className="flex-1 bg-white/90 rounded-xl py-2 border-2 border-red-500 text-center shadow-md">
               <p className="text-red-600 font-black text-[11px] tracking-widest">AURA</p>
-              <p className="text-red-600 text-[32px] font-black leading-none mt-1">{aura}</p>
+              <p className="text-red-600 text-[32px] font-black leading-none mt-0.5">{aura}</p>
             </div>
-            <div className="flex-1 bg-white/90 rounded-xl py-3 border-2 border-green-500 text-center shadow-md">
+            <div className="flex-1 bg-white/90 rounded-xl py-2 border-2 border-green-500 text-center shadow-md">
               <p className="text-green-600 font-black text-[11px] tracking-widest">SKILL</p>
-              <p className="text-green-600 text-[32px] font-black leading-none mt-1">{skill}</p>
+              <p className="text-green-600 text-[32px] font-black leading-none mt-0.5">{skill}</p>
             </div>
-            <div className="flex-1 bg-white/90 rounded-xl py-3 border-2 border-yellow-500 text-center shadow-md">
+            <div className="flex-1 bg-white/90 rounded-xl py-2 border-2 border-yellow-500 text-center shadow-md">
               <p className="text-yellow-600 font-black text-[11px] tracking-widest">STAMINA</p>
-              <p className="text-yellow-600 text-[32px] font-black leading-none mt-1">{stamina}</p>
+              <p className="text-yellow-600 text-[32px] font-black leading-none mt-0.5">{stamina}</p>
             </div>
           </div>
 
