@@ -12,6 +12,7 @@ type Deck = {
 }
 
 type MatchStatus = 'idle' | 'queued' | 'matched'
+type SelectedMode = 'quick' | 'private' | null
 
 export default function PlayPage() {
   const supabase = useMemo(() => createClient(), [])
@@ -19,18 +20,20 @@ export default function PlayPage() {
 
   const [decks, setDecks] = useState<Deck[]>([])
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
+  const [selectedMode, setSelectedMode] = useState<SelectedMode>(null)
   const [loading, setLoading] = useState(true)
   const [matchStatus, setMatchStatus] = useState<MatchStatus>('idle')
   const [matchError, setMatchError] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
 
   // Private room state
-  const [roomMode, setRoomMode] = useState<'none' | 'create' | 'join'>('none')
+  const [roomMode, setRoomMode] = useState<'create' | 'join'>('create')
   const [createdRoomCode, setCreatedRoomCode] = useState<string | null>(null)
   const [joinCode, setJoinCode] = useState('')
   const [roomLoading, setRoomLoading] = useState(false)
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const deckPickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -59,8 +62,24 @@ export default function PlayPage() {
     }
   }, [supabase])
 
+  // Scroll deck picker into view when it appears
+  useEffect(() => {
+    if (selectedMode && deckPickerRef.current) {
+      deckPickerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, [selectedMode])
+
   const validDecks = decks.filter(d => d.card_ids.length === 20)
   const selectedDeck = decks.find(d => d.id === selectedDeckId)
+
+  function selectMode(mode: SelectedMode) {
+    setSelectedMode(prev => prev === mode ? null : mode)
+    setSelectedDeckId(null)
+    setMatchError(null)
+    setCreatedRoomCode(null)
+    setJoinCode('')
+    setRoomMode('create')
+  }
 
   async function handleQuickMatch() {
     if (!selectedDeckId || !userId) return
@@ -143,7 +162,6 @@ export default function PlayPage() {
     setCreatedRoomCode(data.roomCode)
     setRoomLoading(false)
 
-    // Subscribe to the game session to know when opponent joins
     const channel = supabase
       .channel('room_wait_' + data.gameId)
       .on('postgres_changes', {
@@ -226,47 +244,69 @@ export default function PlayPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto min-h-0"><div className="max-w-3xl mx-auto p-8">
-        {/* Step 1: Select deck */}
-        <section className="mb-10">
+
+        {/* Game mode selection */}
+        <section className="mb-6">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
-            1. Select Your Deck
+            Choose Game Mode
           </h2>
 
-          {validDecks.length === 0 ? (
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
-              <p className="text-gray-400 mb-4">You don't have any valid decks (20 cards each) yet.</p>
-              <Link
-                href="/deck-builder"
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold transition"
-              >
-                Build a Deck
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {validDecks.map(deck => (
-                <button
-                  key={deck.id}
-                  onClick={() => { setSelectedDeckId(deck.id); setMatchError(null) }}
-                  className={`text-left p-4 rounded-2xl border-2 transition ${
-                    selectedDeckId === deck.id
-                      ? 'border-blue-500 bg-blue-900/30'
-                      : 'border-gray-800 bg-gray-900 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20'
-                  }`}
-                >
-                  <p className="font-bold text-lg">{deck.name}</p>
-                  <p className="text-sm text-gray-500">{deck.card_ids.length} cards</p>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Quick Match */}
+            <button
+              onClick={() => selectMode('quick')}
+              className={`p-6 rounded-2xl text-left transition shadow-lg ${
+                selectedMode === 'quick'
+                  ? 'bg-gradient-to-br from-blue-700 to-purple-700 shadow-blue-500/30 shadow-xl ring-2 ring-blue-400'
+                  : 'bg-gradient-to-br from-blue-700/70 to-purple-700/70 hover:from-blue-600 hover:to-purple-600 shadow-blue-900/20 hover:shadow-blue-500/30 hover:shadow-xl'
+              }`}
+            >
+              <div className="text-3xl mb-3">⚡</div>
+              <h3 className="text-xl font-bold mb-1">Quick Match</h3>
+              <p className="text-blue-200 text-sm">Get matched with a random opponent instantly</p>
+            </button>
+
+            {/* Private Room */}
+            <button
+              onClick={() => selectMode('private')}
+              className={`p-6 rounded-2xl text-left transition ${
+                selectedMode === 'private'
+                  ? 'bg-gray-800 border-2 border-amber-500 shadow-md shadow-amber-900/30'
+                  : 'bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-amber-600/60 hover:shadow-md hover:shadow-amber-900/20'
+              }`}
+            >
+              <div className="text-3xl mb-3">🔒</div>
+              <h3 className="text-xl font-bold mb-1">Private Room</h3>
+              <p className="text-gray-400 text-sm">Play with a friend using a room code</p>
+            </button>
+
+            {/* Single Player Journey */}
+            <Link
+              href="/game/journey"
+              className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-yellow-500 hover:shadow-md hover:shadow-yellow-900/30 p-6 rounded-2xl text-left transition block"
+            >
+              <div className="text-3xl mb-3">🗺</div>
+              <h3 className="text-xl font-bold mb-1">Single Player Journey</h3>
+              <p className="text-gray-400 text-sm">Face opponents, earn coins, defeat bosses</p>
+            </Link>
+
+            {/* Practice vs CPU */}
+            <Link
+              href="/game/practice"
+              className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-green-500 hover:shadow-md hover:shadow-green-900/30 p-6 rounded-2xl text-left transition block"
+            >
+              <div className="text-3xl mb-3">🤖</div>
+              <h3 className="text-xl font-bold mb-1">Practice vs CPU</h3>
+              <p className="text-gray-400 text-sm">Easy · Medium · Hard difficulty</p>
+            </Link>
+          </div>
         </section>
 
-        {/* Step 2: Choose match type */}
-        {selectedDeckId && (
-          <section>
+        {/* Deck picker — shown after selecting Quick Match or Private Room */}
+        {selectedMode !== null && (
+          <section ref={deckPickerRef} className="border-t border-gray-800 pt-6">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
-              2. Choose Match Type
+              Select Your Deck
             </h2>
 
             {matchError && (
@@ -275,50 +315,47 @@ export default function PlayPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              {/* Quick Match */}
+            {validDecks.length === 0 ? (
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
+                <p className="text-gray-400 mb-4">You don't have any valid decks (20 cards each) yet.</p>
+                <Link
+                  href="/deck-builder"
+                  className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold transition"
+                >
+                  Build a Deck
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                {validDecks.map(deck => (
+                  <button
+                    key={deck.id}
+                    onClick={() => { setSelectedDeckId(deck.id); setMatchError(null) }}
+                    className={`text-left p-4 rounded-2xl border-2 transition ${
+                      selectedDeckId === deck.id
+                        ? 'border-blue-500 bg-blue-900/30'
+                        : 'border-gray-800 bg-gray-900 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20'
+                    }`}
+                  >
+                    <p className="font-bold text-lg">{deck.name}</p>
+                    <p className="text-sm text-gray-500">{deck.card_ids.length} cards</p>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Quick Match action */}
+            {selectedMode === 'quick' && selectedDeckId && (
               <button
                 onClick={handleQuickMatch}
-                className="bg-gradient-to-br from-blue-700 to-purple-700 hover:from-blue-600 hover:to-purple-600 p-6 rounded-2xl text-left transition shadow-lg shadow-blue-900/20 hover:shadow-blue-500/30 hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 py-4 rounded-2xl font-bold text-lg transition shadow-lg hover:shadow-blue-500/30"
               >
-                <div className="text-3xl mb-3">⚡</div>
-                <h3 className="text-xl font-bold mb-1">Quick Match</h3>
-                <p className="text-blue-200 text-sm">Get matched with a random opponent instantly</p>
+                Find Match
               </button>
+            )}
 
-              {/* Private Room */}
-              <button
-                onClick={() => setRoomMode(roomMode === 'none' ? 'create' : 'none')}
-                className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-amber-600/60 hover:shadow-md hover:shadow-amber-900/20 p-6 rounded-2xl text-left transition"
-              >
-                <div className="text-3xl mb-3">🔒</div>
-                <h3 className="text-xl font-bold mb-1">Private Room</h3>
-                <p className="text-gray-400 text-sm">Play with a friend using a room code</p>
-              </button>
-
-              {/* Single Player Journey */}
-              <Link
-                href="/game/journey"
-                className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-yellow-500 hover:shadow-md hover:shadow-yellow-900/30 p-6 rounded-2xl text-left transition block"
-              >
-                <div className="text-3xl mb-3">🗺</div>
-                <h3 className="text-xl font-bold mb-1">Single Player Journey</h3>
-                <p className="text-gray-400 text-sm">Face opponents, earn coins, defeat bosses</p>
-              </Link>
-
-              {/* Practice vs CPU */}
-              <Link
-                href="/game/practice"
-                className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-green-500 hover:shadow-md hover:shadow-green-900/30 p-6 rounded-2xl text-left transition block"
-              >
-                <div className="text-3xl mb-3">🤖</div>
-                <h3 className="text-xl font-bold mb-1">Practice vs CPU</h3>
-                <p className="text-gray-400 text-sm">Easy · Medium · Hard difficulty</p>
-              </Link>
-            </div>
-
-            {/* Private room panel */}
-            {roomMode !== 'none' && (
+            {/* Private Room action */}
+            {selectedMode === 'private' && selectedDeckId && (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                 <div className="flex gap-3 mb-6">
                   <button
@@ -395,6 +432,7 @@ export default function PlayPage() {
             )}
           </section>
         )}
+
       </div></div>
     </div>
   )
