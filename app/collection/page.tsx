@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import CardStats from '../components/CardStats'
+import CoreCard from '../components/CoreCard'
 
 type Card = {
   id: number
@@ -26,7 +26,7 @@ type PackStatus = {
   lastOpened?: string   // ISO timestamp — used for the live countdown
 }
 
-type RevealedCard = { id: number; name: string; rarity: string; image_url?: string | null }
+type RevealedCard = { id: number; name: string; rarity: string; image_url?: string | null; aura?: number; skill?: number; stamina?: number; total_score?: number }
 
 type AnimState = {
   cards: RevealedCard[]
@@ -208,31 +208,31 @@ export default function Collection() {
                 {/* Card — remount on cardIndex change to re-trigger entrance animation */}
                 <div
                   key={anim.cardIndex}
-                  className="pack-card-container card-entrance w-44 h-64 cursor-pointer mb-8"
+                  className="pack-card-container card-entrance cursor-pointer mb-8"
+                  style={{ width: 320 * 0.65, height: 448 * 0.65 }}
                   onClick={handlePackClick}
                 >
                   <div className={`pack-card-inner ${anim.isFlipped ? 'flipped' : ''}`}>
 
                     {/* Back */}
-                    <div className="pack-card-back bg-gradient-to-br from-indigo-950 to-purple-950 border-2 border-indigo-700 flex items-center justify-center overflow-hidden">
+                    <div className="pack-card-back bg-gradient-to-br from-indigo-950 to-purple-950 border-2 border-indigo-700 flex items-center justify-center overflow-hidden rounded-2xl">
                       <img src="/card-back.png" alt="Card back" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
                     </div>
 
                     {/* Front */}
-                    <div
-                      className={`pack-card-front border-2 ${style.border} bg-gray-900 flex flex-col overflow-hidden ${isRare ? 'rare-glow' : ''}`}
+                    <div className={`pack-card-front overflow-hidden ${isRare ? 'rare-glow' : ''}`}
                       style={isRare ? { '--glow': style.glowColor } as React.CSSProperties : undefined}
                     >
-                      <div className="flex-1 bg-gray-800 flex items-center justify-center overflow-hidden">
-                        {card.image_url
-                          ? <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" />
-                          : <span className="text-4xl opacity-20">🃏</span>
-                        }
-                      </div>
-                      <div className="p-3 text-center">
-                        <p className="text-xs font-bold truncate mb-1.5">{card.name}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${style.badge}`}>{card.rarity}</span>
-                      </div>
+                      <CoreCard
+                        scale={0.65}
+                        name={card.name}
+                        aura={card.aura ?? 0}
+                        skill={card.skill ?? 0}
+                        stamina={card.stamina ?? 0}
+                        totalScore={card.total_score ?? 0}
+                        imageUrl={card.image_url ?? null}
+                        rarity={card.rarity}
+                      />
                     </div>
 
                   </div>
@@ -377,37 +377,26 @@ export default function Collection() {
               })}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {cards.map(card => {
-                const style = RARITY_STYLE[card.rarity] ?? RARITY_STYLE.Core
-                return (
-                  <div
-                    key={card.id}
-                    className={`bg-gray-900 border-2 ${style.border} rounded-2xl overflow-hidden cursor-default hover:scale-[1.02] hover:shadow-xl hover:brightness-110 transition-all duration-200 ${style.glow ? `shadow-lg ${style.glow}` : ''}`}
-                  >
-                    <div className="h-48 bg-gray-800 relative overflow-hidden">
-                      {card.image_url
-                        ? <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-5xl opacity-20">🃏</div>
-                      }
-                      {card.quantity > 1 && (
-                        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                          ×{card.quantity}
-                        </div>
-                      )}
+            <div className="flex flex-wrap gap-4">
+              {cards.map(card => (
+                <div key={card.id} className="relative hover:scale-[1.03] transition-transform duration-200">
+                  <CoreCard
+                    scale={0.55}
+                    name={card.name}
+                    aura={card.aura}
+                    skill={card.skill}
+                    stamina={card.stamina}
+                    totalScore={card.total_score}
+                    imageUrl={card.image_url}
+                    rarity={card.rarity}
+                  />
+                  {card.quantity > 1 && (
+                    <div className="absolute top-2 right-2 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                      ×{card.quantity}
                     </div>
-                    <div className="p-3">
-                      <div className="flex items-start justify-between gap-1 mb-2">
-                        <h3 className="font-bold text-sm leading-tight">{card.name}</h3>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>
-                          {card.rarity === 'Very Rare' ? 'VR' : card.rarity === 'Spectacular' ? '★' : card.rarity[0]}
-                        </span>
-                      </div>
-                      <CardStats totalScore={card.total_score} aura={card.aura} skill={card.skill} stamina={card.stamina} size="sm" />
-                    </div>
-                  </div>
-                )
-              })}
+                  )}
+                </div>
+              ))}
             </div>
           </>
         )}

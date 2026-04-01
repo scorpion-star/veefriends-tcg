@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import CardStats from '@/app/components/CardStats'
+import CoreCard from '@/app/components/CoreCard'
 import CoinIcon from '@/app/components/CoinIcon'
 
 type Card = {
@@ -183,7 +183,7 @@ export default function StorePage() {
                     <span className="flex items-center gap-1"><CoinIcon size={12} /> {RARITY_PRICES[rarity]} each</span>
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                <div className="flex flex-wrap gap-4">
                   {rarityCards.map(card => {
                     const price = RARITY_PRICES[card.rarity]
                     const canAfford = (coins ?? 0) >= price
@@ -191,23 +191,25 @@ export default function StorePage() {
                     const msg = purchaseMsg?.id === card.id ? purchaseMsg : null
 
                     return (
-                      <div key={card.id} className={`bg-gray-900 border ${style.card} rounded-2xl overflow-hidden flex flex-col`}>
-                        <div className="h-44 bg-gray-800 overflow-hidden">
-                          {card.image_url
-                            ? <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🃏</div>
-                          }
-                        </div>
-                        <div className="p-2.5 flex flex-col gap-1.5 flex-1">
-                          <p className="font-bold text-xs leading-tight">{card.name}</p>
-                          <CardStats totalScore={card.total_score} aura={card.aura} skill={card.skill} stamina={card.stamina} size="sm" />
+                      <div key={card.id} className="flex flex-col items-center gap-2">
+                        <CoreCard
+                          scale={0.55}
+                          name={card.name}
+                          aura={card.aura}
+                          skill={card.skill}
+                          stamina={card.stamina}
+                          totalScore={card.total_score}
+                          imageUrl={card.image_url}
+                          rarity={card.rarity}
+                        />
+                        <div className="flex flex-col items-center gap-1" style={{ width: 320 * 0.55 }}>
                           {msg && (
                             <p className={`text-xs font-semibold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.msg}</p>
                           )}
                           <button
                             onClick={() => purchaseCard(card)}
                             disabled={isBuying || !canAfford}
-                            className="mt-auto w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold py-1.5 rounded-xl text-xs transition"
+                            className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold py-2 rounded-xl text-sm transition"
                           >
                             {isBuying ? '…' : <span className="flex items-center gap-1 justify-center"><CoinIcon size={14} /> {price}</span>}
                           </button>

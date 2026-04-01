@@ -8,7 +8,7 @@ import {
 } from '@/lib/game-types'
 import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
-import CardStats from '@/app/components/CardStats'
+import CoreCard from '@/app/components/CoreCard'
 import { PlayerScoreRow, TieBankSidebar } from '@/app/components/GemBoard'
 
 const RARITY_BORDER: Record<string, string> = {
@@ -398,44 +398,43 @@ export default function GameRoomPage() {
             })()}
             {revealTied && <p className="text-sm text-gray-400 mb-6">Gems banked for next round</p>}
 
-            <div className="flex gap-6 items-center justify-center">
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2 font-medium">You</p>
-                <div className={`w-44 rounded-2xl border-2 overflow-hidden shadow-xl ${revealMyCard ? RARITY_BORDER[revealMyCard.rarity] : 'border-gray-700'} bg-gray-900 ${revealIWon ? 'shadow-green-500/30' : revealTied ? '' : 'shadow-red-500/20'}`}>
-                  {revealMyCard?.image_url && (
-                    <img src={revealMyCard.image_url} alt={revealMyCard.name} className="w-full h-36 object-cover" />
-                  )}
-                  <div className="p-3 text-center">
-                    <p className="text-sm font-bold break-words leading-tight mb-1">{revealMyCard?.name}</p>
-                    {state.lastRound.attribute === 'sprint'
-                      ? <p className="text-2xl font-black text-yellow-400">⚡ {revealMyVal}</p>
-                      : <p className={`text-2xl font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealMyVal}</p>
-                    }
+            <div className="flex gap-4 items-end justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-sm text-gray-400 font-medium">You</p>
+                <div className="relative">
+                  {revealMyCard && <CoreCard scale={0.5} name={revealMyCard.name} aura={revealMyCard.aura} skill={revealMyCard.skill} stamina={revealMyCard.stamina} totalScore={revealMyCard.total_score} imageUrl={revealMyCard.image_url} rarity={revealMyCard.rarity} />}
+                  {/* Attribute highlight */}
+                  <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none">
+                    <div className="bg-black/80 rounded-xl px-3 py-1">
+                      {state.lastRound.attribute === 'sprint'
+                        ? <p className="text-lg font-black text-yellow-400">⚡ {revealMyVal}</p>
+                        : <p className={`text-lg font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealMyVal}</p>
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-3xl text-gray-500 font-black">vs</div>
+              <div className="flex flex-col items-center gap-2 pb-14">
+                <div className="text-2xl text-gray-500 font-black">vs</div>
                 {!revealTied && (
-                  <div className={`text-sm font-bold px-3 py-1 rounded-full ${revealIWon ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
+                  <div className={`text-xs font-bold px-3 py-1 rounded-full ${revealIWon ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
                     {revealIWon ? '▲ Win' : '▼ Loss'}
                   </div>
                 )}
               </div>
 
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2 font-medium">{opponentLabel}</p>
-                <div className={`w-44 rounded-2xl border-2 overflow-hidden shadow-xl ${revealTheirCard ? RARITY_BORDER[revealTheirCard.rarity] : 'border-gray-700'} bg-gray-900 ${!revealIWon && !revealTied ? 'shadow-green-500/30' : ''}`}>
-                  {revealTheirCard?.image_url && (
-                    <img src={revealTheirCard.image_url} alt={revealTheirCard.name} className="w-full h-36 object-cover" />
-                  )}
-                  <div className="p-3 text-center">
-                    <p className="text-sm font-bold break-words leading-tight mb-1">{revealTheirCard?.name}</p>
-                    {state.lastRound.attribute === 'sprint'
-                      ? <p className="text-2xl font-black text-yellow-400">⚡ {revealTheirVal}</p>
-                      : <p className={`text-2xl font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealTheirVal}</p>
-                    }
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-sm text-gray-400 font-medium">{opponentLabel}</p>
+                <div className="relative">
+                  {revealTheirCard && <CoreCard scale={0.5} name={revealTheirCard.name} aura={revealTheirCard.aura} skill={revealTheirCard.skill} stamina={revealTheirCard.stamina} totalScore={revealTheirCard.total_score} imageUrl={revealTheirCard.image_url} rarity={revealTheirCard.rarity} />}
+                  <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none">
+                    <div className="bg-black/80 rounded-xl px-3 py-1">
+                      {state.lastRound.attribute === 'sprint'
+                        ? <p className="text-lg font-black text-yellow-400">⚡ {revealTheirVal}</p>
+                        : <p className={`text-lg font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealTheirVal}</p>
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
@@ -657,25 +656,17 @@ export default function GameRoomPage() {
 
       {/* ── FIXED BOTTOM-RIGHT: My current card ── */}
       {myCard && (
-        <div className={`fixed bottom-3 right-3 z-30 w-[229px] bg-gray-900/95 backdrop-blur border-2 ${RARITY_BORDER[myCard.rarity]} rounded-2xl overflow-hidden shadow-2xl`}>
-          <img
-            src={myCard.image_url || '/card-back.png'}
-            alt={myCard.name}
-            className="w-full h-48 object-cover"
+        <div className="fixed bottom-3 right-3 z-30 drop-shadow-2xl">
+          <CoreCard
+            scale={0.72}
+            name={myCard.name}
+            aura={myCard.aura}
+            skill={myCard.skill}
+            stamina={myCard.stamina}
+            totalScore={myCard.total_score}
+            imageUrl={myCard.image_url}
+            rarity={myCard.rarity}
           />
-          <div className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-600 bg-gray-800 shrink-0 flex items-center justify-center">
-                {avatarUrl
-                  ? <img src={avatarUrl} alt="You" className="w-full h-full object-cover" />
-                  : <span className="text-xs font-bold text-gray-400">{myUsername.slice(0,2).toUpperCase() || '?'}</span>
-                }
-              </div>
-              <p className="text-[32px] font-bold text-white break-words leading-tight">{myCard.name}</p>
-            </div>
-            <p className="text-2xl text-gray-500 mb-2.5">{myCard.rarity} · {me ? `${me.deck.length} left` : ''}</p>
-            <CardStats totalScore={myCard.total_score} aura={myCard.aura} skill={myCard.skill} stamina={myCard.stamina} size="md" />
-          </div>
         </div>
       )}
 
