@@ -97,7 +97,7 @@ export default function CoreCard({
             {/* Total score badge — bottom-right of art */}
             <div className={`absolute bottom-2 right-2 w-14 h-14 rounded-full bg-gradient-to-br ${t.scoreBg} flex flex-col items-center justify-center shadow-xl`}
               style={{ border: '3px solid rgba(255,255,255,0.6)' }}>
-              <p className={`text-[10px] font-bold ${t.scoreText} leading-none`}>TOT</p>
+              <p className={`text-[10px] font-bold ${t.scoreText} leading-none`}>TOTAL</p>
               <p className={`text-xl font-black ${t.scoreText} leading-none`}>{totalScore}</p>
             </div>
           </div>
@@ -124,9 +124,7 @@ export default function CoreCard({
           </div>
 
           {/* Rarity bar */}
-          <div className={`absolute bottom-0 left-0 right-0 h-11 bg-gradient-to-r ${t.bar} flex items-center px-5`}>
-            <p className={`font-black text-[13px] tracking-[3px] uppercase ${t.barText}`}>{rarity}</p>
-          </div>
+          <div className={`absolute bottom-0 left-0 right-0 h-[11px] bg-gradient-to-r ${t.bar}`} />
 
         </div>
       </div>
