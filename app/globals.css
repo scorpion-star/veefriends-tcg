@@ -145,7 +145,7 @@ body {
 
 /* ── CoreCard hover tilt ───────────────────────────────────────────────────── */
 .core-card-root {
-  transition: transform 0.1s ease-out, filter 0.2s ease;
+  transition: filter 0.2s ease;
 }
 .core-card-root:hover {
   filter: drop-shadow(0 20px 40px var(--shimmy-glow, rgba(234,179,8,0.5)));

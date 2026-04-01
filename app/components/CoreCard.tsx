@@ -3,7 +3,7 @@
 // CoreCard — unified card design across the entire app.
 // `scale` controls display size. Outer div takes (320*scale × 448*scale) px in layout.
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 
 const BASE_W = 320
 const BASE_H = 448
@@ -83,52 +83,87 @@ const HOVER_GLOW: Record<string, string> = {
   Spectacular: 'rgba(99,102,241,0.55)',
 }
 
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t
+}
+
 export default function CoreCard({
   name, aura, skill, stamina, totalScore, imageUrl,
   rarity = 'Core', scale = 1,
 }: CoreCardProps) {
   const t = THEME[rarity] ?? THEME.Core
   const glow = HOVER_GLOW[rarity] ?? HOVER_GLOW.Core
-  const popY = Math.max(8, Math.round(20 * scale))
+  const maxPop = Math.max(8, Math.round(20 * scale))
 
   const rootRef = useRef<HTMLDivElement>(null)
-  const lastPos = useRef<{ x: number; y: number } | null>(null)
-  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rafRef  = useRef<number | null>(null)
 
-  // Smooth tanh clamp — fast flicks hit the limit, gentle moves stay proportional
-  const tilt = (delta: number, max = 15) => max * Math.tanh(delta / 8)
+  // Target values (set instantly on mouse events)
+  const target  = useRef({ rotX: 0, rotY: 0, pop: 0, sc: 1 })
+  // Current rendered values (lerped toward target each frame)
+  const current = useRef({ rotX: 0, rotY: 0, pop: 0, sc: 1 })
 
-  const applyTransform = useCallback((rotX: number, rotY: number) => {
-    if (rootRef.current) {
-      rootRef.current.style.transform =
-        `perspective(800px) translateY(-${popY}px) scale(1.08) rotateX(${rotX}deg) rotateY(${rotY}deg)`
-    }
-  }, [popY])
+  const commit = useCallback(() => {
+    const el = rootRef.current
+    if (!el) return
+    const { rotX, rotY, pop, sc } = current.current
+    el.style.transform =
+      `perspective(900px) translateY(-${pop}px) scale(${sc}) rotateX(${rotX}deg) rotateY(${rotY}deg)`
+  }, [])
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const curr = { x: e.clientX, y: e.clientY }
+  const tick = useCallback(() => {
+    const tg = target.current
+    const cu = current.current
 
-    if (lastPos.current) {
-      const dx = curr.x - lastPos.current.x
-      const dy = curr.y - lastPos.current.y
-      applyTransform(-tilt(dy), tilt(dx))
+    cu.rotX = lerp(cu.rotX, tg.rotX, 0.1)
+    cu.rotY = lerp(cu.rotY, tg.rotY, 0.1)
+    cu.pop  = lerp(cu.pop,  tg.pop,  0.12)
+    cu.sc   = lerp(cu.sc,   tg.sc,   0.12)
+
+    commit()
+
+    const done =
+      Math.abs(tg.rotX - cu.rotX) < 0.02 &&
+      Math.abs(tg.rotY - cu.rotY) < 0.02 &&
+      Math.abs(tg.pop  - cu.pop)  < 0.05 &&
+      Math.abs(tg.sc   - cu.sc)   < 0.0005
+
+    if (done) {
+      cu.rotX = tg.rotX; cu.rotY = tg.rotY
+      cu.pop  = tg.pop;  cu.sc   = tg.sc
+      commit()
+      rafRef.current = null
     } else {
-      // First frame on enter — just pop, no tilt yet
-      applyTransform(0, 0)
+      rafRef.current = requestAnimationFrame(tick)
     }
+  }, [commit])
 
-    lastPos.current = curr
+  const startRaf = useCallback(() => {
+    if (!rafRef.current) rafRef.current = requestAnimationFrame(tick)
+  }, [tick])
 
-    // Snap back to flat when mouse stops moving
-    if (resetTimer.current) clearTimeout(resetTimer.current)
-    resetTimer.current = setTimeout(() => applyTransform(0, 0), 80)
-  }, [applyTransform])
+  // Position-based tilt: where on the card is the mouse?
+  // Holds naturally when mouse stops because target doesn't change.
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = rootRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const relX = (e.clientX - rect.left)  / rect.width   // 0 → 1 left → right
+    const relY = (e.clientY - rect.top)   / rect.height  // 0 → 1 top  → bottom
+
+    target.current.rotY =  (relX - 0.5) * 28   // left: -14° / right: +14°
+    target.current.rotX = -(relY - 0.5) * 20   // top:  +10° / bottom: -10°
+    target.current.pop  = maxPop
+    target.current.sc   = 1.08
+    startRaf()
+  }, [maxPop, startRaf])
 
   const handleMouseLeave = useCallback(() => {
-    if (resetTimer.current) clearTimeout(resetTimer.current)
-    if (rootRef.current) rootRef.current.style.transform = ''
-    lastPos.current = null
-  }, [])
+    target.current = { rotX: 0, rotY: 0, pop: 0, sc: 1 }
+    startRaf()
+  }, [startRaf])
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
 
   return (
     <div
