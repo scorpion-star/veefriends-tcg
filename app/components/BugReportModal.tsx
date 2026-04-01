@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import NeonButton from './NeonButton'
 
 interface Props {
   onClose: () => void
@@ -44,12 +45,7 @@ export default function BugReportModal({ onClose }: Props) {
             <div className="text-5xl mb-4">✅</div>
             <h2 className="text-xl font-bold text-white mb-2">Report Sent!</h2>
             <p className="text-gray-400 text-sm mb-6">Thanks for helping us improve the game. We'll look into it.</p>
-            <button
-              onClick={onClose}
-              className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl transition"
-            >
-              Close
-            </button>
+            <NeonButton variant="warning" size="md" fullWidth onClick={onClose}>Close</NeonButton>
           </div>
         ) : (
           <>
@@ -91,20 +87,10 @@ export default function BugReportModal({ onClose }: Props) {
               {error && <p className="text-red-400 text-sm">{error}</p>}
 
               <div className="flex gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || !title.trim() || !description.trim()}
-                  className="flex-1 py-3 rounded-xl bg-red-700 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold transition"
-                >
+                <NeonButton type="button" variant="ghost" size="md" className="flex-1" onClick={onClose}>Cancel</NeonButton>
+                <NeonButton type="submit" variant="danger" size="md" className="flex-1" disabled={submitting || !title.trim() || !description.trim()}>
                   {submitting ? 'Sending…' : 'Submit Report'}
-                </button>
+                </NeonButton>
               </div>
             </form>
           </>

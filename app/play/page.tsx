@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import NeonButton from '@/app/components/NeonButton'
 
 type Deck = {
   id: string
@@ -219,12 +220,7 @@ export default function PlayPage() {
           <h2 className="text-3xl font-bold mb-3">Finding Opponent...</h2>
           <p className="text-gray-400 mb-2">Playing with: <span className="text-white font-semibold">{selectedDeck?.name}</span></p>
           <p className="text-gray-600 text-sm mb-10">Waiting for another player to join the queue</p>
-          <button
-            onClick={cancelQueue}
-            className="bg-gray-800 hover:bg-gray-700 border border-gray-700 px-8 py-3 rounded-2xl transition"
-          >
-            Cancel
-          </button>
+          <NeonButton variant="ghost" size="lg" onClick={cancelQueue}>Cancel</NeonButton>
         </div>
       </div>
     )
@@ -255,49 +251,35 @@ export default function PlayPage() {
             {/* Quick Match */}
             <button
               onClick={() => selectMode('quick')}
-              className={`p-6 rounded-2xl text-left transition shadow-lg ${
-                selectedMode === 'quick'
-                  ? 'bg-gradient-to-br from-blue-700 to-purple-700 shadow-blue-500/30 shadow-xl ring-2 ring-blue-400'
-                  : 'bg-gradient-to-br from-blue-700/70 to-purple-700/70 hover:from-blue-600 hover:to-purple-600 shadow-blue-900/20 hover:shadow-blue-500/30 hover:shadow-xl'
-              }`}
+              className={`neon-game-card${selectedMode === 'quick' ? ' neon-game-card--active-cyan' : ''} p-6 text-left`}
             >
               <div className="text-3xl mb-3">⚡</div>
               <h3 className="text-xl font-bold mb-1">Quick Match</h3>
-              <p className="text-blue-200 text-sm">Get matched with a random opponent instantly</p>
+              <p className="text-cyan-300/70 text-sm">Get matched with a random opponent instantly</p>
             </button>
 
             {/* Private Room */}
             <button
               onClick={() => selectMode('private')}
-              className={`p-6 rounded-2xl text-left transition ${
-                selectedMode === 'private'
-                  ? 'bg-gray-800 border-2 border-amber-500 shadow-md shadow-amber-900/30'
-                  : 'bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-amber-600/60 hover:shadow-md hover:shadow-amber-900/20'
-              }`}
+              className={`neon-game-card${selectedMode === 'private' ? ' neon-game-card--active-violet' : ''} p-6 text-left`}
             >
               <div className="text-3xl mb-3">🔒</div>
               <h3 className="text-xl font-bold mb-1">Private Room</h3>
-              <p className="text-gray-400 text-sm">Play with a friend using a room code</p>
+              <p className="text-violet-300/70 text-sm">Play with a friend using a room code</p>
             </button>
 
             {/* Single Player Journey */}
-            <Link
-              href="/game/journey"
-              className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-yellow-500 hover:shadow-md hover:shadow-yellow-900/30 p-6 rounded-2xl text-left transition block"
-            >
+            <Link href="/game/journey" className="neon-game-card neon-game-card--amber p-6 text-left block">
               <div className="text-3xl mb-3">🗺</div>
               <h3 className="text-xl font-bold mb-1">Single Player Journey</h3>
-              <p className="text-gray-400 text-sm">Face opponents, earn coins, defeat bosses</p>
+              <p className="text-amber-300/70 text-sm">Face opponents, earn coins, defeat bosses</p>
             </Link>
 
             {/* Practice vs CPU */}
-            <Link
-              href="/game/practice"
-              className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 hover:border-green-500 hover:shadow-md hover:shadow-green-900/30 p-6 rounded-2xl text-left transition block"
-            >
+            <Link href="/game/practice" className="neon-game-card neon-game-card--green p-6 text-left block">
               <div className="text-3xl mb-3">🤖</div>
               <h3 className="text-xl font-bold mb-1">Practice vs CPU</h3>
-              <p className="text-gray-400 text-sm">Easy · Medium · Hard difficulty</p>
+              <p className="text-green-300/70 text-sm">Easy · Medium · Hard difficulty</p>
             </Link>
           </div>
         </section>
@@ -318,12 +300,9 @@ export default function PlayPage() {
             {validDecks.length === 0 ? (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
                 <p className="text-gray-400 mb-4">You don't have any valid decks (20 cards each) yet.</p>
-                <Link
-                  href="/deck-builder"
-                  className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold transition"
-                >
+                <NeonButton variant="primary" size="md" onClick={() => router.push('/deck-builder')}>
                   Build a Deck
-                </Link>
+                </NeonButton>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -331,11 +310,7 @@ export default function PlayPage() {
                   <button
                     key={deck.id}
                     onClick={() => { setSelectedDeckId(deck.id); setMatchError(null) }}
-                    className={`text-left p-4 rounded-2xl border-2 transition ${
-                      selectedDeckId === deck.id
-                        ? 'border-blue-500 bg-blue-900/30'
-                        : 'border-gray-800 bg-gray-900 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20'
-                    }`}
+                    className={`neon-deck-card text-left p-4${selectedDeckId === deck.id ? ' neon-deck-card--selected' : ''}`}
                   >
                     <p className="font-bold text-lg">{deck.name}</p>
                     <p className="text-sm text-gray-500">{deck.card_ids.length} cards</p>
@@ -346,34 +321,31 @@ export default function PlayPage() {
 
             {/* Quick Match action */}
             {selectedMode === 'quick' && selectedDeckId && (
-              <button
-                onClick={handleQuickMatch}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 py-4 rounded-2xl font-bold text-lg transition shadow-lg hover:shadow-blue-500/30"
-              >
-                Find Match
-              </button>
+              <NeonButton variant="primary" size="lg" fullWidth onClick={handleQuickMatch}>
+                ⚡ Find Match
+              </NeonButton>
             )}
 
             {/* Private Room action */}
             {selectedMode === 'private' && selectedDeckId && (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                 <div className="flex gap-3 mb-6">
-                  <button
+                  <NeonButton
+                    variant={roomMode === 'create' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="flex-1"
                     onClick={() => { setRoomMode('create'); setCreatedRoomCode(null); setMatchError(null) }}
-                    className={`flex-1 py-2 rounded-xl font-medium text-sm transition ${
-                      roomMode === 'create' ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
-                    }`}
                   >
                     Create Room
-                  </button>
-                  <button
+                  </NeonButton>
+                  <NeonButton
+                    variant={roomMode === 'join' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="flex-1"
                     onClick={() => { setRoomMode('join'); setCreatedRoomCode(null); setMatchError(null) }}
-                    className={`flex-1 py-2 rounded-xl font-medium text-sm transition ${
-                      roomMode === 'join' ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
-                    }`}
                   >
                     Join Room
-                  </button>
+                  </NeonButton>
                 </div>
 
                 {roomMode === 'create' && (
@@ -381,7 +353,7 @@ export default function PlayPage() {
                     {createdRoomCode ? (
                       <div className="text-center">
                         <p className="text-gray-400 mb-3 text-sm">Share this code with your friend:</p>
-                        <div className="text-5xl font-black tracking-widest text-blue-400 mb-4 font-mono">
+                        <div className="text-5xl font-black tracking-widest text-cyan-400 mb-4 font-mono" style={{ textShadow: '0 0 16px rgba(34,211,238,0.7)' }}>
                           {createdRoomCode}
                         </div>
                         <div className="flex items-center justify-center gap-2 text-yellow-400 animate-pulse text-sm">
@@ -394,13 +366,9 @@ export default function PlayPage() {
                         <p className="text-gray-400 mb-4 text-sm">
                           Create a private room and share the code with a friend.
                         </p>
-                        <button
-                          onClick={handleCreateRoom}
-                          disabled={roomLoading}
-                          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-8 py-3 rounded-xl font-semibold transition hover:shadow-blue-400/30 hover:shadow-md"
-                        >
+                        <NeonButton variant="secondary" size="md" onClick={handleCreateRoom} disabled={roomLoading}>
                           {roomLoading ? 'Creating...' : 'Create Room'}
-                        </button>
+                        </NeonButton>
                       </div>
                     )}
                   </div>
@@ -416,15 +384,11 @@ export default function PlayPage() {
                         onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
                         placeholder="XXXXXX"
                         maxLength={6}
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest uppercase focus:outline-none focus:border-blue-500"
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest uppercase focus:outline-none focus:border-cyan-500 focus:shadow-[0_0_10px_rgba(34,211,238,0.3)]"
                       />
-                      <button
-                        onClick={handleJoinRoom}
-                        disabled={roomLoading || joinCode.length < 6}
-                        className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-6 py-3 rounded-xl font-semibold transition hover:shadow-blue-400/30 hover:shadow-md"
-                      >
+                      <NeonButton variant="primary" size="md" onClick={handleJoinRoom} disabled={roomLoading || joinCode.length < 6}>
                         {roomLoading ? 'Joining...' : 'Join'}
-                      </button>
+                      </NeonButton>
                     </div>
                   </div>
                 )}

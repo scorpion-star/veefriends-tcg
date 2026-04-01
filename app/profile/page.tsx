@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { validateUsername } from '@/lib/profanity'
 import AvatarUpload from '@/app/components/AvatarUpload'
+import NeonButton from '@/app/components/NeonButton'
 
 const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000
 
@@ -123,19 +124,12 @@ export default function ProfilePage() {
               />
               {usernameError && <p className="text-red-400 text-sm">{usernameError}</p>}
               <div className="flex gap-3">
-                <button
-                  onClick={saveUsername}
-                  disabled={savingUsername || newUsername.trim().length < 3}
-                  className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold py-3 rounded-xl transition"
-                >
+                <NeonButton variant="warning" size="md" className="flex-1" onClick={saveUsername} disabled={savingUsername || newUsername.trim().length < 3}>
                   {savingUsername ? 'Saving…' : 'Save'}
-                </button>
-                <button
-                  onClick={() => { setEditingUsername(false); setUsernameError(null) }}
-                  className="px-5 py-3 rounded-xl border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition"
-                >
+                </NeonButton>
+                <NeonButton variant="ghost" size="md" onClick={() => { setEditingUsername(false); setUsernameError(null) }}>
                   Cancel
-                </button>
+                </NeonButton>
               </div>
             </div>
           ) : (
@@ -147,12 +141,9 @@ export default function ProfilePage() {
                     Can change in {cooldownDaysRemaining} day{cooldownDaysRemaining === 1 ? '' : 's'}
                   </span>
                 ) : (
-                  <button
-                    onClick={() => { setNewUsername(username); setEditingUsername(true) }}
-                    className="text-sm text-amber-400 hover:text-amber-300 transition"
-                  >
+                  <NeonButton variant="warning" size="xs" onClick={() => { setNewUsername(username); setEditingUsername(true) }}>
                     Edit
-                  </button>
+                  </NeonButton>
                 )}
               </div>
               {cooldownDaysRemaining > 0 && (

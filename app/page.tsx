@@ -7,6 +7,7 @@ import SparkleTitle from './components/SparkleTitle'
 import CoinIcon from './components/CoinIcon'
 import AvatarUpload from './components/AvatarUpload'
 import UsernameSetup from './components/UsernameSetup'
+import NeonButton from './components/NeonButton'
 
 const BG = "min-h-screen relative"
 const OVERLAY = "absolute inset-0 bg-black/55"
@@ -107,42 +108,24 @@ export default function Home() {
             </p>
           </div>
           <div className="space-y-4">
-            <button
-              onClick={() => router.push('/play')}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 py-5 rounded-2xl text-xl font-bold shadow-lg shadow-blue-900/30 transition hover:shadow-blue-400/30 hover:shadow-xl"
-            >
+            <NeonButton variant="primary" size="xl" fullWidth onClick={() => router.push('/play')}>
               ⚔ Play Now
-            </button>
-            <button
-              onClick={() => router.push('/deck-builder')}
-              className="w-full bg-gray-900/70 hover:bg-gray-800/80 backdrop-blur border border-gray-700 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20 py-4 rounded-2xl text-lg font-medium transition"
-            >
+            </NeonButton>
+            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/deck-builder')}>
               🃏 Deck Builder
-            </button>
-            <button
-              onClick={() => router.push('/collection')}
-              className="w-full bg-gray-900/70 hover:bg-gray-800/80 backdrop-blur border border-gray-700 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20 py-4 rounded-2xl text-lg font-medium transition"
-            >
+            </NeonButton>
+            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/collection')}>
               📦 My Collection
-            </button>
-            <button
-              onClick={() => router.push('/store')}
-              className="w-full bg-gray-900/70 hover:bg-gray-800/80 backdrop-blur border border-gray-700 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20 py-4 rounded-2xl text-lg font-medium transition"
-            >
-              <span className="flex items-center justify-center gap-2"><CoinIcon size={20} /> Store</span>
-            </button>
-            <button
-              onClick={() => router.push('/profile')}
-              className="w-full bg-gray-900/70 hover:bg-gray-800/80 backdrop-blur border border-gray-700 hover:border-amber-700/60 hover:shadow-md hover:shadow-amber-900/20 py-4 rounded-2xl text-lg font-medium transition"
-            >
+            </NeonButton>
+            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/store')}>
+              <CoinIcon size={18} /> Store
+            </NeonButton>
+            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/profile')}>
               👤 My Profile
-            </button>
-            <button
-              onClick={signOut}
-              className="w-full bg-transparent hover:bg-gray-900/60 border border-gray-700 hover:border-gray-500 py-3 rounded-2xl text-base text-gray-400 hover:text-gray-200 transition"
-            >
+            </NeonButton>
+            <NeonButton variant="ghost" size="md" fullWidth onClick={signOut}>
               Sign Out
-            </button>
+            </NeonButton>
           </div>
         </div>
         </div>
@@ -181,20 +164,12 @@ export default function Home() {
           />
 
           <div className="flex gap-5 pt-5">
-            <button
-              onClick={signIn}
-              disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 py-5 rounded-2xl text-xl font-medium transition"
-            >
+            <NeonButton variant="primary" size="xl" className="flex-1" onClick={signIn} disabled={loading}>
               Sign In
-            </button>
-            <button
-              onClick={signUp}
-              disabled={loading}
-              className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 py-5 rounded-2xl text-xl font-medium transition"
-            >
+            </NeonButton>
+            <NeonButton variant="success" size="xl" className="flex-1" onClick={signUp} disabled={loading}>
               Sign Up
-            </button>
+            </NeonButton>
           </div>
         </div>
 

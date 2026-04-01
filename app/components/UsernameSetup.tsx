@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { validateUsername } from '@/lib/profanity'
+import NeonButton from './NeonButton'
 
 interface Props {
   onComplete: (username: string) => void
@@ -58,13 +59,9 @@ export default function UsernameSetup({ onComplete }: Props) {
 
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving || value.trim().length < 3}
-            className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold py-4 rounded-2xl text-lg transition shadow-lg shadow-amber-900/30"
-          >
+          <NeonButton type="submit" variant="warning" size="lg" fullWidth disabled={saving || value.trim().length < 3}>
             {saving ? 'Saving…' : 'Set Username'}
-          </button>
+          </NeonButton>
         </form>
       </div>
     </div>

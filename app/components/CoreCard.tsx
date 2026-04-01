@@ -24,13 +24,13 @@ const THEME: Record<string, {
   scoreBg: string; scoreText: string; bar: string; barText: string
 }> = {
   Core: {
-    border:    'border-yellow-600',
-    bg:        'from-yellow-700 via-amber-800 to-yellow-900',
-    banner:    'from-amber-900 to-amber-700',
-    frame:     'border-yellow-600',
-    scoreBg:   'from-amber-700 to-amber-800',
-    scoreText: 'text-amber-100',
-    bar:       'from-amber-950 to-amber-900',
+    border:    'border-yellow-500',
+    bg:        'from-yellow-500 via-amber-500 to-yellow-600',
+    banner:    'from-amber-600 to-yellow-500',
+    frame:     'border-yellow-400',
+    scoreBg:   'from-yellow-400 to-amber-500',
+    scoreText: 'text-amber-950',
+    bar:       'from-amber-700 to-yellow-600',
     barText:   'text-white',
   },
   Rare: {
@@ -76,7 +76,7 @@ const THEME: Record<string, {
 }
 
 const HOVER_GLOW: Record<string, string> = {
-  Core:        'rgba(234,179,8,0.55)',
+  Core:        'rgba(202,138,4,0.65)',
   Rare:        'rgba(217,119,6,0.55)',
   'Very Rare': 'rgba(249,115,22,0.55)',
   Epic:        'rgba(34,197,94,0.55)',

@@ -153,6 +153,135 @@ body {
   position: relative;
 }
 
+/* ── Neon Buttons ──────────────────────────────────────────────────────────── */
+.neon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--nb-color, #22d3ee);
+  background-color: rgba(0, 0, 0, 0.72);
+  color: var(--nb-color, #22d3ee);
+  clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
+  filter: drop-shadow(0 0 6px var(--nb-glow, rgba(34,211,238,0.45)));
+  transition: filter 0.2s ease, transform 0.12s ease, background-color 0.2s ease;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+  text-decoration: none;
+}
+
+/* Top-edge highlight (gives depth) */
+.neon-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 35%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Scan-line sweep on hover */
+.neon-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  pointer-events: none;
+}
+
+.neon-btn:hover:not(:disabled)::after {
+  animation: neon-sweep 0.45s ease-out forwards;
+}
+
+@keyframes neon-sweep {
+  from { left: -60%; }
+  to   { left: 130%; }
+}
+
+.neon-btn:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--nb-color, #22d3ee) 14%, transparent);
+  filter: drop-shadow(0 0 16px var(--nb-glow, rgba(34,211,238,0.7)));
+}
+
+.neon-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  filter: drop-shadow(0 0 22px var(--nb-glow, rgba(34,211,238,0.9)));
+}
+
+.neon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* Variants */
+.neon-btn--primary   { --nb-color: #22d3ee; --nb-glow: rgba(34,211,238,0.5); }   /* cyan-400 */
+.neon-btn--secondary { --nb-color: #a78bfa; --nb-glow: rgba(167,139,250,0.5); }  /* violet-400 */
+.neon-btn--danger    { --nb-color: #f87171; --nb-glow: rgba(248,113,113,0.5); }  /* red-400 */
+.neon-btn--success   { --nb-color: #4ade80; --nb-glow: rgba(74,222,128,0.5); }   /* green-400 */
+.neon-btn--warning   { --nb-color: #fbbf24; --nb-glow: rgba(251,191,36,0.5); }   /* amber-400 */
+.neon-btn--ghost     { --nb-color: rgba(156,163,175,0.75); --nb-glow: rgba(156,163,175,0.2); }
+
+/* Sizes */
+.neon-btn--xl  { padding: 1.1rem 2.5rem;  font-size: 1.125rem; }
+.neon-btn--lg  { padding: 0.875rem 2rem;  font-size: 1rem; }
+.neon-btn--md  { padding: 0.625rem 1.5rem; font-size: 0.875rem; }
+.neon-btn--sm  { padding: 0.4rem 1rem;    font-size: 0.75rem;
+  clip-path: polygon(5px 0%, calc(100% - 5px) 0%, 100% 5px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0% calc(100% - 5px), 0% 5px); }
+.neon-btn--xs  { padding: 0.25rem 0.75rem; font-size: 0.7rem; letter-spacing: 0.06em;
+  clip-path: polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px); }
+
+.neon-btn--full { width: 100%; }
+
+/* ── Neon game-mode cards (play page) ──────────────────────────────────────── */
+.neon-game-card {
+  position: relative;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--ngc-color, rgba(34,211,238,0.35));
+  color: #fff;
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, filter 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+.neon-game-card:hover {
+  border-color: var(--ngc-color, rgba(34,211,238,0.8));
+  background: color-mix(in srgb, var(--ngc-color, #22d3ee) 6%, transparent);
+  filter: drop-shadow(0 0 10px var(--ngc-glow, rgba(34,211,238,0.35)));
+}
+.neon-game-card--active-cyan  { --ngc-color: rgba(34,211,238,0.9); --ngc-glow: rgba(34,211,238,0.45); border-color: rgba(34,211,238,0.9); background: rgba(34,211,238,0.07); filter: drop-shadow(0 0 12px rgba(34,211,238,0.5)); }
+.neon-game-card--active-violet{ --ngc-color: rgba(167,139,250,0.9); --ngc-glow: rgba(167,139,250,0.45); border-color: rgba(167,139,250,0.9); background: rgba(167,139,250,0.07); filter: drop-shadow(0 0 12px rgba(167,139,250,0.5)); }
+.neon-game-card--amber { --ngc-color: rgba(251,191,36,0.4); --ngc-glow: rgba(251,191,36,0.35); }
+.neon-game-card--green { --ngc-color: rgba(74,222,128,0.4); --ngc-glow: rgba(74,222,128,0.35); }
+
+/* ── Neon deck-selection cards ─────────────────────────────────────────────── */
+.neon-deck-card {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(156,163,175,0.25);
+  border-radius: 1rem;
+  color: #fff;
+  transition: border-color 0.2s ease, filter 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+.neon-deck-card:hover {
+  border-color: rgba(34,211,238,0.5);
+  background: rgba(34,211,238,0.05);
+  filter: drop-shadow(0 0 8px rgba(34,211,238,0.25));
+}
+.neon-deck-card--selected {
+  border-color: rgba(34,211,238,0.85);
+  background: rgba(34,211,238,0.08);
+  filter: drop-shadow(0 0 12px rgba(34,211,238,0.4));
+}
+
 /* ── Sparkle particles ─────────────────────────────────────────────────────── */
 .sparkle {
   position: absolute;

@@ -5,6 +5,7 @@ import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CoreCard from '../components/CoreCard'
+import NeonButton from '../components/NeonButton'
 
 type Card = {
   id: number
@@ -242,20 +243,8 @@ export default function DeckBuilder() {
               Are you sure you want to delete <span className="text-white font-semibold">{deckToDelete?.name}</span>? This cannot be undone.
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmDeleteId(null)}
-                disabled={deleting}
-                className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-300 hover:text-white hover:border-gray-500 transition disabled:opacity-40"
-              >
-                No, Keep It
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleting}
-                className="flex-1 py-3 rounded-xl bg-red-700 hover:bg-red-600 text-white font-bold transition disabled:opacity-40"
-              >
-                {deleting ? 'Deleting…' : 'Yes, Delete'}
-              </button>
+              <NeonButton variant="ghost" size="md" className="flex-1" onClick={() => setConfirmDeleteId(null)} disabled={deleting}>No, Keep It</NeonButton>
+              <NeonButton variant="danger" size="md" className="flex-1" onClick={confirmDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Yes, Delete'}</NeonButton>
             </div>
           </div>
         </div>
@@ -272,12 +261,7 @@ export default function DeckBuilder() {
           <Link href="/collection" className="text-sm text-gray-400 hover:text-white transition px-3 py-2">
             Collection
           </Link>
-          <Link
-            href="/play"
-            className="bg-blue-600 hover:bg-blue-700 text-sm font-semibold px-4 py-2 rounded-xl transition"
-          >
-            Play →
-          </Link>
+          <NeonButton variant="primary" size="sm" onClick={() => router.push('/play')}>Play →</NeonButton>
         </div>
       </header>
 
@@ -492,28 +476,20 @@ export default function DeckBuilder() {
 
               {/* Save button */}
               <div className="flex flex-col gap-2">
-                <button
+                <NeonButton
+                  variant={isValid ? 'success' : 'primary'}
+                  size="sm"
                   onClick={saveDeck}
                   disabled={saving || !deckName.trim() || (!activeDeckId && savedDecks.length >= 10)}
-                  className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isValid
-                      ? 'bg-green-600 hover:bg-green-500 shadow-lg shadow-green-900/30 hover:shadow-green-500/40 hover:shadow-lg'
-                      : 'bg-blue-700 hover:bg-blue-600 hover:shadow-blue-500/30 hover:shadow-md'
-                  }`}
                   title={!activeDeckId && savedDecks.length >= 10 ? 'Deck limit reached (10/10)' : undefined}
                 >
                   {saving ? 'Saving...' : isValid ? '✓ Save Deck' : 'Save Draft'}
-                </button>
+                </NeonButton>
                 {!activeDeckId && savedDecks.length >= 10 && (
                   <p className="text-xs text-red-400 text-center">Deck limit reached (10/10)</p>
                 )}
                 {deckCards.length > 0 && (
-                  <button
-                    onClick={() => setDeckCardIds([])}
-                    className="px-5 py-1.5 rounded-xl text-xs text-gray-500 hover:text-red-400 hover:bg-gray-800 transition"
-                  >
-                    Clear deck
-                  </button>
+                  <NeonButton variant="ghost" size="xs" onClick={() => setDeckCardIds([])}>Clear deck</NeonButton>
                 )}
               </div>
             </div>
