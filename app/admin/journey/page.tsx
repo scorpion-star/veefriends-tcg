@@ -5,13 +5,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 
-type Difficulty = 'easy' | 'medium' | 'hard'
-
 type Opponent = {
   id: string
   name: string
   avatar_url: string | null
-  difficulty: Difficulty
+  difficulty: number
   is_boss: boolean
   coins_reward: number
   stage_order: number
@@ -20,8 +18,15 @@ type Opponent = {
   position_y: number
 }
 
-const DIFF_ICON: Record<Difficulty, string> = { easy: '🟢', medium: '🟡', hard: '🔴' }
-const BLANK_FORM = { name: '', difficulty: 'easy' as Difficulty, is_boss: false, coins_reward: 1, section: 1 }
+function difficultyLabel(d: number): string {
+  if (d <= 2) return '🟢 Novice'
+  if (d <= 4) return '🟡 Easy'
+  if (d <= 6) return '🟠 Medium'
+  if (d <= 8) return '🔴 Hard'
+  return '💀 Expert'
+}
+
+const BLANK_FORM = { name: '', difficulty: 5, is_boss: false, coins_reward: 1, section: 1 }
 
 function AvatarOrInitials({ url, name, size = 48 }: { url: string | null; name: string; size?: number }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -260,7 +265,7 @@ export default function AdminJourneyPage() {
                   {o.is_boss && <span className="text-xs bg-yellow-800/60 text-yellow-300 px-2 py-0.5 rounded-full">BOSS</span>}
                 </div>
                 <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-3 flex-wrap">
-                  <span>{DIFF_ICON[o.difficulty]} {o.difficulty}</span>
+                  <span>{difficultyLabel(o.difficulty)}</span>
                   <span>🪙 {o.coins_reward}</span>
                   <span className="text-gray-600">Map {o.section ?? 1} · #{index + 1}</span>
                 </div>
@@ -364,19 +369,24 @@ export default function AdminJourneyPage() {
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Difficulty</label>
-              <div className="flex gap-2">
-                {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                  <button key={d} onClick={() => setForm(f => ({ ...f, difficulty: d }))}
-                    className={`flex-1 py-2 rounded-xl text-sm font-semibold border-2 capitalize transition ${
-                      form.difficulty === d
-                        ? d === 'easy' ? 'border-green-500 bg-green-900/30' : d === 'medium' ? 'border-yellow-500 bg-yellow-900/20' : 'border-red-500 bg-red-900/30'
-                        : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                    }`}>
-                    {DIFF_ICON[d]} {d}
-                  </button>
-                ))}
-              </div>
+              <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2">
+                Difficulty — <span className="text-white">{difficultyLabel(form.difficulty)}</span>
+                <span className="text-gray-600 ml-1">({form.difficulty}/10)</span>
+              </label>
+              <input
+                type="range" min={1} max={10} step={1}
+                value={form.difficulty}
+                onChange={e => setForm(f => ({ ...f, difficulty: Number(e.target.value) }))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, ${
+                    form.difficulty <= 2 ? '#22c55e' :
+                    form.difficulty <= 4 ? '#eab308' :
+                    form.difficulty <= 6 ? '#f97316' :
+                    form.difficulty <= 8 ? '#ef4444' : '#a855f7'
+                  } ${(form.difficulty - 1) / 9 * 100}%, #374151 ${(form.difficulty - 1) / 9 * 100}%)`,
+                }}
+              />
             </div>
 
             <div className="flex gap-4">

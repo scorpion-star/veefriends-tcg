@@ -413,8 +413,7 @@ function PracticePageInner() {
 
       // Journey mode: pre-select deck + difficulty, then auto-start
       if (isJourneyMode && journeyDeckId) {
-        const raw = searchParams.get('difficulty') ?? 'medium'
-        const journeyDifficulty = raw === 'easy' ? 3 : raw === 'hard' ? 8 : 5
+        const journeyDifficulty = Number(searchParams.get('difficulty') ?? '5') || 5
         setSelectedDeckId(journeyDeckId)
         setDifficulty(journeyDifficulty)
         setLoadingSetup(false)

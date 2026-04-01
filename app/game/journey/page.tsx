@@ -6,13 +6,11 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import CoinIcon from '@/app/components/CoinIcon'
 
-type Difficulty = 'easy' | 'medium' | 'hard'
-
 type Opponent = {
   id: string
   name: string
   avatar_url: string | null
-  difficulty: Difficulty
+  difficulty: number
   is_boss: boolean
   coins_reward: number
   stage_order: number
@@ -24,8 +22,13 @@ type Opponent = {
 type Deck = { id: string; name: string; card_ids: number[] }
 type Status = 'completed' | 'available' | 'locked'
 
-const DIFF_ICON: Record<Difficulty, string> = { easy: '🟢', medium: '🟡', hard: '🔴' }
-const DIFF_LABEL: Record<Difficulty, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }
+function difficultyLabel(d: number): string {
+  if (d <= 2) return '🟢 Novice'
+  if (d <= 4) return '🟡 Easy'
+  if (d <= 6) return '🟠 Medium'
+  if (d <= 8) return '🔴 Hard'
+  return '💀 Expert'
+}
 const TOTAL_MAPS = 10
 
 export default function JourneyPage() {
@@ -364,7 +367,7 @@ export default function JourneyPage() {
               <p className="text-yellow-400 text-sm font-bold mb-2 uppercase tracking-widest">Boss Battle</p>
             )}
             <div className="flex items-center justify-center gap-4 text-sm text-gray-400 mb-6">
-              <span>{DIFF_ICON[selected.difficulty]} {DIFF_LABEL[selected.difficulty]}</span>
+              <span>{difficultyLabel(selected.difficulty)}</span>
               <span className="flex items-center gap-1">
                 <CoinIcon size={13} />
                 {selected.coins_reward} coin{selected.coins_reward !== 1 ? 's' : ''}
