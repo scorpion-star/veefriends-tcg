@@ -24,13 +24,13 @@ const THEME: Record<string, {
   scoreBg: string; scoreText: string; bar: string; barText: string
 }> = {
   Core: {
-    border:    'border-yellow-300',
-    bg:        'from-yellow-400 via-amber-500 to-yellow-600',
-    banner:    'from-amber-600 to-yellow-500',
-    frame:     'border-yellow-200',
-    scoreBg:   'from-yellow-300 to-amber-400',
-    scoreText: 'text-amber-900',
-    bar:       'from-amber-700 to-yellow-600',
+    border:    'border-yellow-600',
+    bg:        'from-yellow-700 via-amber-800 to-yellow-900',
+    banner:    'from-amber-900 to-amber-700',
+    frame:     'border-yellow-600',
+    scoreBg:   'from-amber-700 to-amber-800',
+    scoreText: 'text-amber-100',
+    bar:       'from-amber-950 to-amber-900',
     barText:   'text-white',
   },
   Rare: {
