@@ -1,11 +1,8 @@
-// CoreCard — the unified card design used across the entire app.
-// Use the `scale` prop to resize without distorting proportions.
-// The outer div takes up exactly (320*scale × 448*scale) pixels in the layout.
+// CoreCard — unified card design across the entire app.
+// `scale` controls display size. Outer div takes (320*scale × 448*scale) px in layout.
 
 const BASE_W = 320
 const BASE_H = 448
-
-type Rarity = 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular'
 
 interface CoreCardProps {
   name: string
@@ -81,59 +78,54 @@ export default function CoreCard({
   const t = THEME[rarity] ?? THEME.Core
 
   return (
-    // Outer div: takes correct space in the layout
     <div style={{ width: BASE_W * scale, height: BASE_H * scale, position: 'relative', flexShrink: 0 }}>
-      {/* Inner div: renders at full size then scaled */}
       <div style={{ width: BASE_W, height: BASE_H, transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute' }}>
 
         <div className={`absolute inset-0 bg-gradient-to-b ${t.bg} rounded-3xl shadow-2xl overflow-hidden border-[10px] ${t.border}`}>
 
-          {/* VEE FRIENDS banner */}
-          <div className={`bg-gradient-to-r ${t.banner} py-2.5 text-center border-b-4 ${t.border}`}>
-            <p className="text-lg font-black text-white tracking-[4px] drop-shadow">VEE FRIENDS</p>
+          {/* Banner */}
+          <div className={`bg-gradient-to-r ${t.banner} py-1.5 text-center border-b-4 ${t.border}`}>
+            <p className="text-base font-black text-white tracking-[4px] drop-shadow">VEE FRIENDS</p>
           </div>
 
-          {/* Art frame */}
-          <div className={`mx-4 mt-3 rounded-2xl overflow-hidden border-4 ${t.frame} shadow-inner bg-black/40`} style={{ height: 148 }}>
+          {/* Art frame — maximized */}
+          <div className={`mx-3 mt-2 rounded-2xl overflow-hidden border-4 ${t.frame} shadow-inner bg-black/40 relative`} style={{ height: 238 }}>
             {imageUrl
               ? <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center text-5xl opacity-20">🃏</div>
+              : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🃏</div>
             }
-          </div>
-
-          {/* Name */}
-          <div className="px-4 mt-2 text-center">
-            <p className="text-[15px] font-black text-white drop-shadow-md leading-tight line-clamp-1">{name}</p>
-          </div>
-
-          {/* Aura / Skill / Stamina */}
-          <div className="px-4 mt-2 flex gap-2">
-            <div className="flex-1 bg-white/90 rounded-xl py-2 border-2 border-red-500 text-center shadow-md">
-              <p className="text-red-600 font-bold text-[9px] tracking-widest">AURA</p>
-              <p className="text-red-600 text-2xl font-black leading-none mt-0.5">{aura}</p>
-            </div>
-            <div className="flex-1 bg-white/90 rounded-xl py-2 border-2 border-green-500 text-center shadow-md">
-              <p className="text-green-600 font-bold text-[9px] tracking-widest">SKILL</p>
-              <p className="text-green-600 text-2xl font-black leading-none mt-0.5">{skill}</p>
-            </div>
-            <div className="flex-1 bg-white/90 rounded-xl py-2 border-2 border-yellow-500 text-center shadow-md">
-              <p className="text-yellow-600 font-bold text-[9px] tracking-widest">STAMINA</p>
-              <p className="text-yellow-600 text-2xl font-black leading-none mt-0.5">{stamina}</p>
+            {/* Total score badge — bottom-right of art */}
+            <div className={`absolute bottom-2 right-2 w-14 h-14 rounded-full bg-gradient-to-br ${t.scoreBg} flex flex-col items-center justify-center shadow-xl`}
+              style={{ border: '3px solid rgba(255,255,255,0.6)' }}>
+              <p className={`text-[10px] font-bold ${t.scoreText} leading-none`}>TOT</p>
+              <p className={`text-xl font-black ${t.scoreText} leading-none`}>{totalScore}</p>
             </div>
           </div>
 
-          {/* Total Score */}
-          <div className="flex flex-col items-center mt-3">
-            <p className="text-white/70 text-[9px] font-bold tracking-[3px] mb-1.5">TOTAL SCORE</p>
-            <div className={`w-[76px] h-[76px] rounded-full bg-gradient-to-br ${t.scoreBg} flex items-center justify-center shadow-xl`}
-              style={{ border: '5px solid rgba(255,255,255,0.5)' }}>
-              <p className={`text-4xl font-black ${t.scoreText}`}>{totalScore}</p>
+          {/* Character name */}
+          <div className="px-3 mt-2 text-center">
+            <p className="text-[22px] font-black text-white drop-shadow-md leading-tight line-clamp-1">{name}</p>
+          </div>
+
+          {/* Stats — Aura / Skill / Stamina */}
+          <div className="px-3 mt-2 flex gap-2">
+            <div className="flex-1 bg-white/90 rounded-xl py-3 border-2 border-red-500 text-center shadow-md">
+              <p className="text-red-600 font-black text-[11px] tracking-widest">AURA</p>
+              <p className="text-red-600 text-[32px] font-black leading-none mt-1">{aura}</p>
+            </div>
+            <div className="flex-1 bg-white/90 rounded-xl py-3 border-2 border-green-500 text-center shadow-md">
+              <p className="text-green-600 font-black text-[11px] tracking-widest">SKILL</p>
+              <p className="text-green-600 text-[32px] font-black leading-none mt-1">{skill}</p>
+            </div>
+            <div className="flex-1 bg-white/90 rounded-xl py-3 border-2 border-yellow-500 text-center shadow-md">
+              <p className="text-yellow-600 font-black text-[11px] tracking-widest">STAMINA</p>
+              <p className="text-yellow-600 text-[32px] font-black leading-none mt-1">{stamina}</p>
             </div>
           </div>
 
           {/* Rarity bar */}
-          <div className={`absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-r ${t.bar} flex items-center px-5`}>
-            <p className={`font-black text-sm tracking-[3px] uppercase ${t.barText}`}>{rarity}</p>
+          <div className={`absolute bottom-0 left-0 right-0 h-11 bg-gradient-to-r ${t.bar} flex items-center px-5`}>
+            <p className={`font-black text-[13px] tracking-[3px] uppercase ${t.barText}`}>{rarity}</p>
           </div>
 
         </div>
