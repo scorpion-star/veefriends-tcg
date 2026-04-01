@@ -210,7 +210,7 @@ export default function AdminJourneyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="flex-1 overflow-y-auto bg-gray-950 text-white">
       <header className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center gap-4">
         <Link href="/admin" className="text-gray-400 hover:text-white text-sm transition">← Admin</Link>
         <h1 className="text-xl font-bold flex-1">Journey Opponents</h1>
