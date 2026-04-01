@@ -143,16 +143,11 @@ body {
   to   { background-position: 200% center; }
 }
 
-/* ── CoreCard hover pop + shimmy ──────────────────────────────────────────── */
-@keyframes core-shimmy {
-  0%, 100% { transform: translateY(var(--shimmy-y, -20px)) scale(1.08) rotate(-1.5deg); }
-  50%       { transform: translateY(var(--shimmy-y, -20px)) scale(1.08) rotate(1.5deg); }
-}
+/* ── CoreCard hover tilt ───────────────────────────────────────────────────── */
 .core-card-root {
-  transition: filter 0.2s ease;
+  transition: transform 0.1s ease-out, filter 0.2s ease;
 }
 .core-card-root:hover {
-  animation: core-shimmy 400ms ease-in-out infinite;
   filter: drop-shadow(0 20px 40px var(--shimmy-glow, rgba(234,179,8,0.5)));
   z-index: 10;
   position: relative;

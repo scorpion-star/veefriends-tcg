@@ -1,5 +1,9 @@
+'use client'
+
 // CoreCard — unified card design across the entire app.
 // `scale` controls display size. Outer div takes (320*scale × 448*scale) px in layout.
+
+import { useRef, useCallback } from 'react'
 
 const BASE_W = 320
 const BASE_H = 448
@@ -85,13 +89,52 @@ export default function CoreCard({
 }: CoreCardProps) {
   const t = THEME[rarity] ?? THEME.Core
   const glow = HOVER_GLOW[rarity] ?? HOVER_GLOW.Core
-  const popY = `-${Math.max(8, Math.round(20 * scale))}px`
+  const popY = Math.max(8, Math.round(20 * scale))
+
+  const rootRef = useRef<HTMLDivElement>(null)
+  const lastPos = useRef<{ x: number; y: number } | null>(null)
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Smooth tanh clamp — fast flicks hit the limit, gentle moves stay proportional
+  const tilt = (delta: number, max = 15) => max * Math.tanh(delta / 8)
+
+  const applyTransform = useCallback((rotX: number, rotY: number) => {
+    if (rootRef.current) {
+      rootRef.current.style.transform =
+        `perspective(800px) translateY(-${popY}px) scale(1.08) rotateX(${rotX}deg) rotateY(${rotY}deg)`
+    }
+  }, [popY])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const curr = { x: e.clientX, y: e.clientY }
+
+    if (lastPos.current) {
+      const dx = curr.x - lastPos.current.x
+      const dy = curr.y - lastPos.current.y
+      applyTransform(-tilt(dy), tilt(dx))
+    } else {
+      // First frame on enter — just pop, no tilt yet
+      applyTransform(0, 0)
+    }
+
+    lastPos.current = curr
+
+    // Snap back to flat when mouse stops moving
+    if (resetTimer.current) clearTimeout(resetTimer.current)
+    resetTimer.current = setTimeout(() => applyTransform(0, 0), 80)
+  }, [applyTransform])
+
+  const handleMouseLeave = useCallback(() => {
+    if (resetTimer.current) clearTimeout(resetTimer.current)
+    if (rootRef.current) rootRef.current.style.transform = ''
+    lastPos.current = null
+  }, [])
 
   return (
     <div
+      ref={rootRef}
       className="core-card-root group cursor-pointer"
       style={{
-        '--shimmy-y': popY,
         '--shimmy-glow': glow,
         width: BASE_W * scale,
         height: BASE_H * scale,
@@ -99,6 +142,8 @@ export default function CoreCard({
         flexShrink: 0,
         willChange: 'transform',
       } as React.CSSProperties}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       <div style={{ width: BASE_W, height: BASE_H, transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute' }}>
 
@@ -109,13 +154,13 @@ export default function CoreCard({
             <p className="text-base font-black text-white tracking-[4px] drop-shadow">VEE FRIENDS</p>
           </div>
 
-          {/* Art frame — maximized */}
+          {/* Art frame */}
           <div className={`mx-3 mt-2 rounded-2xl overflow-hidden border-4 ${t.frame} shadow-inner bg-black/40 relative`} style={{ height: 238 }}>
             {imageUrl
               ? <img src={imageUrl} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🃏</div>
             }
-            {/* Total score badge — bottom-right of art */}
+            {/* Total score badge */}
             <div className={`absolute bottom-2 right-2 w-14 h-14 rounded-full bg-gradient-to-br ${t.scoreBg} flex flex-col items-center justify-center shadow-xl`}
               style={{ border: '3px solid rgba(255,255,255,0.6)' }}>
               <p className={`text-[10px] font-bold ${t.scoreText} leading-none`}>TOTAL</p>
