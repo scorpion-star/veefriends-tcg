@@ -13,7 +13,7 @@ import CoinIcon from '@/app/components/CoinIcon'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type Difficulty = 'easy' | 'medium' | 'hard'
+type Difficulty = number // 1–10
 type Side = 'human' | 'cpu'
 
 type SideState = {
@@ -73,16 +73,16 @@ const ATTR_COLOR: Record<Attribute, string> = {
   stamina: 'text-yellow-400',
 }
 
-const DIFFICULTY_LABEL: Record<Difficulty, string> = {
-  easy: '🟢 Easy',
-  medium: '🟡 Medium',
-  hard: '🔴 Hard',
+function difficultyLabel(d: number): string {
+  if (d <= 2) return '🟢 Novice'
+  if (d <= 4) return '🟡 Easy'
+  if (d <= 6) return '🟠 Medium'
+  if (d <= 8) return '🔴 Hard'
+  return '💀 Expert'
 }
 
-const CPU_THINK_MS: Record<Difficulty, number> = {
-  easy: 600,
-  medium: 1100,
-  hard: 1600,
+function difficultyThinkMs(d: number): number {
+  return Math.round(200 + (d - 1) * 180) // 200ms at 1 → 1820ms at 10
 }
 
 // ── Pure game logic ────────────────────────────────────────────────────────
@@ -214,7 +214,7 @@ function buildCpuDeck(allCards: Card[], difficulty: Difficulty): number[] {
   const MAX_RP = 15
   let pool = [...allCards]
 
-  if (difficulty === 'hard') {
+  if (difficulty >= 7) {
     pool.sort((a, b) => b.total_score - a.total_score)
   } else {
     pool = shuffle(pool)
@@ -270,30 +270,30 @@ function cpuDecide(
     if (!state.sprintUsed.cpu && cpuCard.rarity !== 'Core') {
       const cpuSprint = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
 
-      if (difficulty === 'hard') {
+      if (difficulty >= 7) {
         // Sprint if CPU's sprint score is decent and human is ahead on the board
         const cpuBest = Math.max(...Object.values(state.cpu.points))
         const humanBest = Math.max(...Object.values(state.human.points))
         if (cpuSprint >= 8 && humanBest > cpuBest + 2) return { type: 'sprint' }
-      } else if (difficulty === 'medium') {
+      } else if (difficulty >= 4) {
         const cpuBest = Math.max(...Object.values(state.cpu.points))
         const humanBest = Math.max(...Object.values(state.human.points))
         if (humanBest >= 5 && cpuBest <= 2) return { type: 'sprint' }
       }
     }
 
-    if (difficulty === 'easy') {
+    if (difficulty <= 3) {
       return { type: 'challenge', attribute: fallback }
     }
 
-    if (difficulty === 'medium') {
+    if (difficulty <= 6) {
       // Pick CPU's highest-value available attribute
       const best = available.reduce((a, b) =>
         cpuCard[a] >= cpuCard[b] ? a : b, fallback)
       return { type: 'challenge', attribute: best }
     }
 
-    // Hard — pick own best attribute, biased toward the weakest score category on the board
+    // Hard (7+) — pick own best attribute, biased toward the weakest score category on the board
     {
       const pts = state.cpu.points
       const weakest = (['aura', 'skill', 'stamina'] as Attribute[])
@@ -319,7 +319,7 @@ function cpuDecide(
     )
     const isLastDecline = declined.length >= 2
 
-    if (difficulty === 'easy') {
+    if (difficulty <= 3) {
       // 30% chance to decline to a random available counter (if not forced faceoff)
       if (!isLastDecline && availableCounter.length > 0 && Math.random() < 0.3) {
         const counter = availableCounter[Math.floor(Math.random() * availableCounter.length)]
@@ -332,7 +332,7 @@ function cpuDecide(
       ? availableCounter.reduce((a, b) => cpuCard[a] >= cpuCard[b] ? a : b, availableCounter[0])
       : null
 
-    if (difficulty === 'medium') {
+    if (difficulty <= 6) {
       // Decline to a better attribute if one is available
       if (!isLastDecline && bestCounter && cpuCard[bestCounter] > cpuVal) {
         return { type: 'decline', counterAttribute: bestCounter }
@@ -342,7 +342,7 @@ function cpuDecide(
       return { type: 'decline', counterAttribute: bestCounter }
     }
 
-    // Hard — decline to a better attribute if one is available, otherwise accept if strong (≥6)
+    // Hard (7+) — decline to a better attribute if one is available, otherwise accept if strong (≥6)
     if (!isLastDecline && bestCounter && cpuCard[bestCounter] > cpuVal) {
       return { type: 'decline', counterAttribute: bestCounter }
     }
@@ -373,7 +373,7 @@ function PracticePageInner() {
   const [userDecks, setUserDecks] = useState<SavedDeck[]>([])
   const [allCards, setAllCards] = useState<Card[]>([])
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
-  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
+  const [difficulty, setDifficulty] = useState<Difficulty>(5)
   const [loadingSetup, setLoadingSetup] = useState(true)
 
   const [userEmail, setUserEmail] = useState<string>('')
@@ -413,7 +413,8 @@ function PracticePageInner() {
 
       // Journey mode: pre-select deck + difficulty, then auto-start
       if (isJourneyMode && journeyDeckId) {
-        const journeyDifficulty = (searchParams.get('difficulty') as Difficulty) ?? 'medium'
+        const raw = searchParams.get('difficulty') ?? 'medium'
+        const journeyDifficulty = raw === 'easy' ? 3 : raw === 'hard' ? 8 : 5
         setSelectedDeckId(journeyDeckId)
         setDifficulty(journeyDifficulty)
         setLoadingSetup(false)
@@ -429,7 +430,8 @@ function PracticePageInner() {
   // Journey mode: auto-start once cards are loaded
   useEffect(() => {
     if (!isJourneyMode || !journeyDeckId || allCards.length === 0 || gameState || shuffling) return
-    const journeyDifficulty = (searchParams.get('difficulty') as Difficulty) ?? 'medium'
+    const raw = searchParams.get('difficulty') ?? 'medium'
+    const journeyDifficulty = raw === 'easy' ? 3 : raw === 'hard' ? 8 : 5
     setDifficulty(journeyDifficulty)
     setSelectedDeckId(journeyDeckId)
   }, [isJourneyMode, journeyDeckId, allCards.length]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -475,7 +477,7 @@ function PracticePageInner() {
             .then(r => r.json())
             .then(d => { if (d.coinsEarned > 0) setCoinsEarned(d.coinsEarned) })
             .catch(() => {})
-        } else if (difficulty === 'hard') {
+        } else if (difficulty >= 7) {
           fetch('/api/coins/practice-win', { method: 'POST' })
             .then(r => r.json())
             .then(d => { if (d.earned) setCoinsEarned(d.earned) })
@@ -500,7 +502,7 @@ function PracticePageInner() {
       const decision = cpuDecide(gameState, difficulty, cardMap)
       setCpuThinking(false)
       applyDecision(decision)
-    }, CPU_THINK_MS[difficulty])
+    }, difficultyThinkMs(difficulty))
 
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -775,28 +777,35 @@ function PracticePageInner() {
             <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">
               2. Choose Difficulty
             </h2>
-            <div className="grid grid-cols-3 gap-3">
-              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                <button
-                  key={d}
-                  onClick={() => setDifficulty(d)}
-                  className={`p-4 rounded-2xl border-2 text-center transition ${
-                    difficulty === d
-                      ? d === 'easy' ? 'border-green-500 bg-green-900/30'
-                        : d === 'medium' ? 'border-yellow-500 bg-yellow-900/20'
-                        : 'border-red-500 bg-red-900/30'
-                      : d === 'easy' ? 'border-gray-800 bg-gray-900 hover:border-green-700/60 hover:shadow-md hover:shadow-green-900/20'
-                        : d === 'medium' ? 'border-gray-800 bg-gray-900 hover:border-yellow-700/60 hover:shadow-md hover:shadow-yellow-900/20'
-                        : 'border-gray-800 bg-gray-900 hover:border-red-700/60 hover:shadow-md hover:shadow-red-900/20'
-                  }`}
-                >
-                  <p className="text-2xl mb-1">
-                    {d === 'easy' ? '🟢' : d === 'medium' ? '🟡' : '🔴'}
-                  </p>
-                  <p className="font-bold capitalize">{d}</p>
-
-                </button>
-              ))}
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl font-black text-white">{difficultyLabel(difficulty)}</span>
+                <span className="text-3xl font-black tabular-nums text-gray-400">{difficulty}<span className="text-base text-gray-600">/10</span></span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={10}
+                step={1}
+                value={difficulty}
+                onChange={e => setDifficulty(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, ${
+                    difficulty <= 2 ? '#22c55e' :
+                    difficulty <= 4 ? '#eab308' :
+                    difficulty <= 6 ? '#f97316' :
+                    difficulty <= 8 ? '#ef4444' : '#a855f7'
+                  } ${(difficulty - 1) / 9 * 100}%, #1f2937 ${(difficulty - 1) / 9 * 100}%)`,
+                }}
+              />
+              <div className="flex justify-between text-xs text-gray-600 mt-2 px-0.5">
+                <span>Novice</span>
+                <span>Easy</span>
+                <span>Medium</span>
+                <span>Hard</span>
+                <span>Expert</span>
+              </div>
             </div>
           </section>
 
@@ -851,7 +860,7 @@ function PracticePageInner() {
           )}
           <h1 className={`text-6xl font-black mb-3 ${iWon ? 'text-yellow-300 drop-shadow-[0_0_30px_rgba(253,224,71,0.6)]' : 'text-gray-300'}`}>{iWon ? 'You Won!' : 'CPU Wins'}</h1>
           <p className="text-gray-400 mb-2">
-            vs {journeyOpponentName ?? `CPU ${DIFFICULTY_LABEL[difficulty]}`}
+            vs {journeyOpponentName ?? `CPU ${difficultyLabel(difficulty)}`}
           </p>
           {iWon && coinsEarned && (
             <p className="text-yellow-300 font-semibold text-lg mt-1 mb-1 flex items-center justify-center gap-1.5">
@@ -1054,7 +1063,7 @@ function PracticePageInner() {
             <span className="text-gray-600 text-xs border border-gray-700 px-2 py-0.5 rounded-full">Your Sprint used</span>
           )}
         </div>
-        <span className="text-xs text-gray-600">{username || userEmail.split('@')[0]} · Practice · {DIFFICULTY_LABEL[difficulty]}</span>
+        <span className="text-xs text-gray-600">{username || userEmail.split('@')[0]} · Practice · {difficultyLabel(difficulty)}</span>
       </header>
 
       {/* ── FIXED LEFT: Tie bank ── */}
@@ -1077,7 +1086,7 @@ function PracticePageInner() {
             />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-bold text-gray-200">{journeyOpponentName ?? `CPU ${DIFFICULTY_LABEL[difficulty]}`}</p>
+            <p className="text-lg font-bold text-gray-200">{journeyOpponentName ?? `CPU ${difficultyLabel(difficulty)}`}</p>
             <p className="text-sm text-gray-500">{gameState.cpu.deck.length} cards left</p>
             {cpuThinking && <p className="text-sm text-amber-400 animate-pulse">Thinking…</p>}
           </div>
