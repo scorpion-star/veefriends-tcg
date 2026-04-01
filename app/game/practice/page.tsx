@@ -962,34 +962,30 @@ function PracticePageInner() {
             {gameState.lastRound.winner === 'tie' && <p className="text-sm text-gray-400 mb-6">Gems banked for next round</p>}
 
             {/* Both cards */}
-            <div className="flex gap-6 items-center justify-center">
+            <div className="flex gap-8 items-start justify-center">
               {/* Human card */}
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2 font-medium">You</p>
-                <div className="relative">
-                  <CoreCard
-                    scale={0.55}
-                    name={revealHumanCard?.name ?? ''}
-                    aura={revealHumanCard?.aura ?? 0}
-                    skill={revealHumanCard?.skill ?? 0}
-                    stamina={revealHumanCard?.stamina ?? 0}
-                    totalScore={revealHumanCard?.total_score ?? 0}
-                    imageUrl={revealHumanCard?.image_url ?? null}
-                    rarity={revealHumanCard?.rarity ?? 'Core'}
-                  />
-                  <div className="absolute bottom-10 left-0 right-0 flex justify-center">
-                    {gameState.lastRound.attribute !== 'sprint' ? (
-                      <p className={`text-3xl font-black drop-shadow-lg ${ATTR_COLOR[gameState.lastRound.attribute]}`}>
-                        {gameState.lastRound.humanValue}
-                      </p>
-                    ) : (
-                      <p className="text-3xl font-black text-yellow-400 drop-shadow-lg">⚡ {gameState.lastRound.humanValue}</p>
-                    )}
-                  </div>
-                </div>
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-gray-400 font-medium">You</p>
+                <CoreCard
+                  scale={0.55}
+                  name={revealHumanCard?.name ?? ''}
+                  aura={revealHumanCard?.aura ?? 0}
+                  skill={revealHumanCard?.skill ?? 0}
+                  stamina={revealHumanCard?.stamina ?? 0}
+                  totalScore={revealHumanCard?.total_score ?? 0}
+                  imageUrl={revealHumanCard?.image_url ?? null}
+                  rarity={revealHumanCard?.rarity ?? 'Core'}
+                />
+                {gameState.lastRound.attribute !== 'sprint' ? (
+                  <p className={`text-6xl font-black drop-shadow-lg tabular-nums ${ATTR_COLOR[gameState.lastRound.attribute]}`}>
+                    {gameState.lastRound.humanValue}
+                  </p>
+                ) : (
+                  <p className="text-6xl font-black text-yellow-400 drop-shadow-lg">⚡ {gameState.lastRound.humanValue}</p>
+                )}
               </div>
 
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 pt-28">
                 <div className="text-3xl text-gray-500 font-black">vs</div>
                 {gameState.lastRound.winner !== 'tie' && (
                   <div className={`text-sm font-bold px-3 py-1 rounded-full ${gameState.lastRound.winner === 'human' ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
@@ -999,29 +995,25 @@ function PracticePageInner() {
               </div>
 
               {/* CPU card */}
-              <div className="text-center">
-                <p className="text-sm text-gray-400 mb-2 font-medium">CPU</p>
-                <div className="relative">
-                  <CoreCard
-                    scale={0.55}
-                    name={revealCpuCard?.name ?? ''}
-                    aura={revealCpuCard?.aura ?? 0}
-                    skill={revealCpuCard?.skill ?? 0}
-                    stamina={revealCpuCard?.stamina ?? 0}
-                    totalScore={revealCpuCard?.total_score ?? 0}
-                    imageUrl={revealCpuCard?.image_url ?? null}
-                    rarity={revealCpuCard?.rarity ?? 'Core'}
-                  />
-                  <div className="absolute bottom-10 left-0 right-0 flex justify-center">
-                    {gameState.lastRound.attribute !== 'sprint' ? (
-                      <p className={`text-3xl font-black drop-shadow-lg ${ATTR_COLOR[gameState.lastRound.attribute]}`}>
-                        {gameState.lastRound.cpuValue}
-                      </p>
-                    ) : (
-                      <p className="text-3xl font-black text-yellow-400 drop-shadow-lg">⚡ {gameState.lastRound.cpuValue}</p>
-                    )}
-                  </div>
-                </div>
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-gray-400 font-medium">CPU</p>
+                <CoreCard
+                  scale={0.55}
+                  name={revealCpuCard?.name ?? ''}
+                  aura={revealCpuCard?.aura ?? 0}
+                  skill={revealCpuCard?.skill ?? 0}
+                  stamina={revealCpuCard?.stamina ?? 0}
+                  totalScore={revealCpuCard?.total_score ?? 0}
+                  imageUrl={revealCpuCard?.image_url ?? null}
+                  rarity={revealCpuCard?.rarity ?? 'Core'}
+                />
+                {gameState.lastRound.attribute !== 'sprint' ? (
+                  <p className={`text-6xl font-black drop-shadow-lg tabular-nums ${ATTR_COLOR[gameState.lastRound.attribute]}`}>
+                    {gameState.lastRound.cpuValue}
+                  </p>
+                ) : (
+                  <p className="text-6xl font-black text-yellow-400 drop-shadow-lg">⚡ {gameState.lastRound.cpuValue}</p>
+                )}
               </div>
             </div>
 

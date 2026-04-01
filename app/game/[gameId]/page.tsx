@@ -398,24 +398,17 @@ export default function GameRoomPage() {
             })()}
             {revealTied && <p className="text-sm text-gray-400 mb-6">Gems banked for next round</p>}
 
-            <div className="flex gap-4 items-end justify-center">
-              <div className="flex flex-col items-center gap-2">
+            <div className="flex gap-8 items-start justify-center">
+              <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-gray-400 font-medium">You</p>
-                <div className="relative">
-                  {revealMyCard && <CoreCard scale={0.5} name={revealMyCard.name} aura={revealMyCard.aura} skill={revealMyCard.skill} stamina={revealMyCard.stamina} totalScore={revealMyCard.total_score} imageUrl={revealMyCard.image_url} rarity={revealMyCard.rarity} />}
-                  {/* Attribute highlight */}
-                  <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none">
-                    <div className="bg-black/80 rounded-xl px-3 py-1">
-                      {state.lastRound.attribute === 'sprint'
-                        ? <p className="text-lg font-black text-yellow-400">⚡ {revealMyVal}</p>
-                        : <p className={`text-lg font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealMyVal}</p>
-                      }
-                    </div>
-                  </div>
-                </div>
+                {revealMyCard && <CoreCard scale={0.5} name={revealMyCard.name} aura={revealMyCard.aura} skill={revealMyCard.skill} stamina={revealMyCard.stamina} totalScore={revealMyCard.total_score} imageUrl={revealMyCard.image_url} rarity={revealMyCard.rarity} />}
+                {state.lastRound.attribute === 'sprint'
+                  ? <p className="text-6xl font-black text-yellow-400 drop-shadow-lg tabular-nums">⚡ {revealMyVal}</p>
+                  : <p className={`text-6xl font-black drop-shadow-lg tabular-nums ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealMyVal}</p>
+                }
               </div>
 
-              <div className="flex flex-col items-center gap-2 pb-14">
+              <div className="flex flex-col items-center gap-2 pt-24">
                 <div className="text-2xl text-gray-500 font-black">vs</div>
                 {!revealTied && (
                   <div className={`text-xs font-bold px-3 py-1 rounded-full ${revealIWon ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
@@ -424,19 +417,13 @@ export default function GameRoomPage() {
                 )}
               </div>
 
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-gray-400 font-medium">{opponentLabel}</p>
-                <div className="relative">
-                  {revealTheirCard && <CoreCard scale={0.5} name={revealTheirCard.name} aura={revealTheirCard.aura} skill={revealTheirCard.skill} stamina={revealTheirCard.stamina} totalScore={revealTheirCard.total_score} imageUrl={revealTheirCard.image_url} rarity={revealTheirCard.rarity} />}
-                  <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none">
-                    <div className="bg-black/80 rounded-xl px-3 py-1">
-                      {state.lastRound.attribute === 'sprint'
-                        ? <p className="text-lg font-black text-yellow-400">⚡ {revealTheirVal}</p>
-                        : <p className={`text-lg font-black ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealTheirVal}</p>
-                      }
-                    </div>
-                  </div>
-                </div>
+                {revealTheirCard && <CoreCard scale={0.5} name={revealTheirCard.name} aura={revealTheirCard.aura} skill={revealTheirCard.skill} stamina={revealTheirCard.stamina} totalScore={revealTheirCard.total_score} imageUrl={revealTheirCard.image_url} rarity={revealTheirCard.rarity} />}
+                {state.lastRound.attribute === 'sprint'
+                  ? <p className="text-6xl font-black text-yellow-400 drop-shadow-lg tabular-nums">⚡ {revealTheirVal}</p>
+                  : <p className={`text-6xl font-black drop-shadow-lg tabular-nums ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealTheirVal}</p>
+                }
               </div>
             </div>
 
