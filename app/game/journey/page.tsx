@@ -50,7 +50,7 @@ export default function JourneyPage() {
     const area = mapAreaRef.current
     if (!img || !area || !img.naturalWidth) return
     const aW = area.clientWidth, aH = area.clientHeight
-    const scale = Math.max(aW / img.naturalWidth, aH / img.naturalHeight)
+    const scale = Math.min(aW / img.naturalWidth, aH / img.naturalHeight)
     setImgBounds({
       offsetLeft: (aW - img.naturalWidth * scale) / 2,
       offsetTop: (aH - img.naturalHeight * scale) / 2,
@@ -255,7 +255,7 @@ export default function JourneyPage() {
             ref={mapImgRef}
             src={mapUrl}
             alt={`Map ${currentSection}`}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-contain"
             draggable={false}
             onLoad={computeImgBounds}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
