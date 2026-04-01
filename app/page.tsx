@@ -8,11 +8,13 @@ import CoinIcon from './components/CoinIcon'
 import AvatarUpload from './components/AvatarUpload'
 import UsernameSetup from './components/UsernameSetup'
 import NeonButton from './components/NeonButton'
+import { useSettings } from './components/SettingsContext'
 
 const BG = "min-h-screen relative"
 const OVERLAY = "absolute inset-0 bg-black/55"
 
 export default function Home() {
+  const { background } = useSettings()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState<any>(null)
@@ -82,8 +84,10 @@ export default function Home() {
   if (user) {
     return (
       <div className={`${BG} text-white`}>
-        <div className="fixed inset-0 overflow-hidden -z-10">
-          <img src="/bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover bg-ken-burns" />
+        <div className="fixed inset-0 -z-10" style={{ background: background.css }}>
+          {background.kenBurns && (
+            <img src="/bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover bg-ken-burns" />
+          )}
         </div>
         <div className="fixed inset-0 bg-black/55 -z-10" />
 
@@ -136,8 +140,10 @@ export default function Home() {
   // ── Login screen ───────────────────────────────────────────────────────────
   return (
     <div className={`${BG} text-white`}>
-      <div className="fixed inset-0 overflow-hidden -z-10">
-        <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
+      <div className="fixed inset-0 -z-10" style={{ background: background.css }}>
+        {background.kenBurns && (
+          <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
+        )}
       </div>
       <div className="fixed inset-0 bg-black/55 -z-10" />
       <div className="flex justify-center px-6 py-12">

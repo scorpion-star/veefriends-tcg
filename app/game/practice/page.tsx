@@ -10,6 +10,7 @@ import RoundBurst from '@/app/components/RoundBurst'
 import CoreCard from '@/app/components/CoreCard'
 import { PlayerScoreRow, TieBankSidebar } from '@/app/components/GemBoard'
 import CoinIcon from '@/app/components/CoinIcon'
+import { useSettings } from '@/app/components/SettingsContext'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -360,6 +361,7 @@ function PracticePageInner() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { background } = useSettings()
 
   // Journey mode params (present when launched from /game/journey)
   const journeyOpponentId = searchParams.get('journeyOpponentId')
@@ -828,7 +830,7 @@ function PracticePageInner() {
     return (
       <div
         className="min-h-screen flex items-center justify-center text-white p-6 relative"
-        style={{ background: "url('/bg.jpg') center/cover fixed, #050510" }}
+        style={{ background: background.css }}
       >
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 text-center max-w-md">
@@ -941,7 +943,7 @@ function PracticePageInner() {
     <div
       className="flex-1 flex flex-col text-white overflow-hidden min-h-0"
       style={{
-        background: 'url(/bg.jpg) center/cover fixed, radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #0a0a1a 60%, #000 100%)',
+        background: background.css,
       }}
     >
       <RoundBurst result={burstResult} triggerKey={gameState.turn} />

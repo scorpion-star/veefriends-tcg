@@ -3,29 +3,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { isSfxMuted, setSfxMuted } from '@/lib/sfx'
+import { isSfxMuted } from '@/lib/sfx'
 import CoinIcon from './CoinIcon'
 import BugReportModal from './BugReportModal'
+import SettingsModal from './SettingsModal'
+import { useSettings } from './SettingsContext'
 
 function isGameRoute(p: string) { return /^\/game\//.test(p) }
-
-// Music plays on home, collection, deck-builder, play (lobby)
-// Stops when inside an actual game match: /game/[gameId] or /game/practice
 
 export default function MusicProvider() {
   const pathname = usePathname()
   const supabase = createClient()
+  const { musicMuted, setMusicMuted, settingsOpen, openSettings, closeSettings } = useSettings()
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [loggedIn, setLoggedIn] = useState(false)
   const [musicPlaying, setMusicPlaying] = useState(false)
-  const [muted, setMuted] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('menuMusicMuted') === 'true'
-    }
-    return false
-  })
-  const [sfxMuted, setSfxMutedState] = useState(() => isSfxMuted())
   const [coins, setCoins] = useState<number | null>(null)
   const [showBugReport, setShowBugReport] = useState(false)
 
@@ -76,7 +69,7 @@ export default function MusicProvider() {
         const audio = new Audio('/music/menu.mp3')
         audio.loop = true
         audio.volume = 0.35
-        audio.muted = muted
+        audio.muted = musicMuted
         audioRef.current = audio
 
         const tryPlay = () => {
@@ -114,70 +107,44 @@ export default function MusicProvider() {
     }
   }, [loggedIn, pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const toggleMusic = useCallback(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    if (!musicPlaying) {
-      audio.muted = false
-      audio.play().then(() => {
-        setMusicPlaying(true)
-        setMuted(false)
-        localStorage.setItem('menuMusicMuted', 'false')
-      }).catch(() => {})
-      return
+  // Sync audio muted state when musicMuted changes from settings
+  useEffect(() => {
+    if (!audioRef.current) return
+    audioRef.current.muted = musicMuted
+    if (!musicMuted && !musicPlaying) {
+      audioRef.current.play()
+        .then(() => setMusicPlaying(true))
+        .catch(() => {})
     }
-
-    const next = !muted
-    audio.muted = next
-    setMuted(next)
-    localStorage.setItem('menuMusicMuted', String(next))
-  }, [musicPlaying, muted])
-
-  const toggleSfx = useCallback(() => {
-    const next = !sfxMuted
-    setSfxMuted(next)
-    setSfxMutedState(next)
-  }, [sfxMuted])
+  }, [musicMuted]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!loggedIn) return null
 
-  const musicIcon = !musicPlaying ? '▶' : muted ? '🔇' : '🔊'
-  const sfxIcon = sfxMuted ? '🔕' : '🔔'
-
   return (
     <>
-    {showBugReport && <BugReportModal onClose={() => setShowBugReport(false)} />}
-    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-end gap-2 px-4 bg-gray-950/90 backdrop-blur-sm border-b border-gray-800/60">
-      <button
-        onClick={() => setShowBugReport(true)}
-        className="mr-auto flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-red-700/60 text-gray-400 hover:text-red-400 px-3 py-1.5 rounded-xl text-xs font-medium transition select-none"
-      >
-        🐛 Report Bug
-      </button>
-      {coins !== null && (
-        <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-1.5 rounded-xl select-none">
-          <CoinIcon size={18} />
-          <span className="text-amber-300 font-bold text-sm">{coins}</span>
-        </div>
-      )}
-      <button
-        onClick={toggleSfx}
-        className="flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-amber-600/60 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white transition-all select-none"
-      >
-        <span className="text-sm leading-none">{sfxIcon}</span>
-        <span>SFX</span>
-      </button>
-      {!isGameRoute(pathname) && (
+      {showBugReport && <BugReportModal onClose={() => setShowBugReport(false)} />}
+      {settingsOpen && <SettingsModal />}
+      <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-end gap-2 px-4 bg-gray-950/90 backdrop-blur-sm border-b border-gray-800/60">
         <button
-          onClick={toggleMusic}
-          className="flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-amber-600/60 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white transition-all select-none"
+          onClick={() => setShowBugReport(true)}
+          className="mr-auto flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-red-700/60 text-gray-400 hover:text-red-400 px-3 py-1.5 rounded-xl text-xs font-medium transition select-none"
         >
-          <span className="text-sm leading-none">{musicIcon}</span>
-          <span>Music</span>
+          🐛 Report Bug
         </button>
-      )}
-    </div>
+        {coins !== null && (
+          <div className="flex items-center gap-1.5 bg-amber-900/50 border border-amber-700/60 px-3 py-1.5 rounded-xl select-none">
+            <CoinIcon size={18} />
+            <span className="text-amber-300 font-bold text-sm">{coins}</span>
+          </div>
+        )}
+        <button
+          onClick={openSettings}
+          className="flex items-center gap-1.5 bg-gray-800/80 border border-gray-700 hover:border-cyan-600/60 hover:text-cyan-400 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 transition-all select-none"
+          title="Settings"
+        >
+          ⚙
+        </button>
+      </div>
     </>
   )
 }

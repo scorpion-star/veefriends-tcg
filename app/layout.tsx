@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import MusicProvider from "./components/MusicProvider";
+import { SettingsProvider } from "./components/SettingsContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +30,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col overflow-hidden">
-        <MusicProvider />
-        <div className="pt-12 flex flex-col flex-1 min-h-0">
-          {children}
-        </div>
+        <SettingsProvider>
+          <MusicProvider />
+          <div className="pt-12 flex flex-col flex-1 min-h-0">
+            {children}
+          </div>
+        </SettingsProvider>
       </body>
     </html>
   );
