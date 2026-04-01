@@ -71,14 +71,35 @@ const THEME: Record<string, {
   },
 }
 
+const HOVER_GLOW: Record<string, string> = {
+  Core:        'rgba(234,179,8,0.55)',
+  Rare:        'rgba(217,119,6,0.55)',
+  'Very Rare': 'rgba(249,115,22,0.55)',
+  Epic:        'rgba(34,197,94,0.55)',
+  Spectacular: 'rgba(99,102,241,0.55)',
+}
+
 export default function CoreCard({
   name, aura, skill, stamina, totalScore, imageUrl,
   rarity = 'Core', scale = 1,
 }: CoreCardProps) {
   const t = THEME[rarity] ?? THEME.Core
+  const glow = HOVER_GLOW[rarity] ?? HOVER_GLOW.Core
+  const popY = `-${Math.max(8, Math.round(20 * scale))}px`
 
   return (
-    <div style={{ width: BASE_W * scale, height: BASE_H * scale, position: 'relative', flexShrink: 0 }}>
+    <div
+      className="core-card-root group cursor-pointer"
+      style={{
+        '--shimmy-y': popY,
+        '--shimmy-glow': glow,
+        width: BASE_W * scale,
+        height: BASE_H * scale,
+        position: 'relative',
+        flexShrink: 0,
+        willChange: 'transform',
+      } as React.CSSProperties}
+    >
       <div style={{ width: BASE_W, height: BASE_H, transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute' }}>
 
         <div className={`absolute inset-0 bg-gradient-to-b ${t.bg} rounded-3xl shadow-2xl overflow-hidden border-[10px] ${t.border}`}>
@@ -91,7 +112,7 @@ export default function CoreCard({
           {/* Art frame — maximized */}
           <div className={`mx-3 mt-2 rounded-2xl overflow-hidden border-4 ${t.frame} shadow-inner bg-black/40 relative`} style={{ height: 238 }}>
             {imageUrl
-              ? <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+              ? <img src={imageUrl} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🃏</div>
             }
             {/* Total score badge — bottom-right of art */}
