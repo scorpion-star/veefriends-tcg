@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import CardStats from '../components/CardStats'
+import CoreCard from '../components/CoreCard'
 
 type Card = {
   id: number
@@ -397,8 +397,13 @@ export default function DeckBuilder() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate leading-tight">{card.name}</p>
-                    <div className="mt-1">
-                      <CardStats totalScore={card.total_score} aura={card.aura} skill={card.skill} stamina={card.stamina} size="sm" />
+                    <div className="mt-1 flex gap-1.5 text-[10px] font-bold">
+                      <span className="text-red-400">{card.aura}</span>
+                      <span className="text-gray-600">/</span>
+                      <span className="text-green-400">{card.skill}</span>
+                      <span className="text-gray-600">/</span>
+                      <span className="text-yellow-400">{card.stamina}</span>
+                      <span className="text-gray-500 ml-1">·{card.total_score}</span>
                     </div>
                   </div>
                 </button>
@@ -526,41 +531,29 @@ export default function DeckBuilder() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+                <div className="flex flex-wrap gap-3">
                   {deckCards.map((card) => (
                     <div
                       key={card.id}
-                      className={`relative group cursor-pointer rounded-2xl overflow-hidden border-2 ${RARITY_BORDER[card.rarity]} hover:scale-105 hover:shadow-xl transition-all`}
+                      className="relative group cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => removeCard(card.id)}
                       title={`Remove ${card.name}`}
                     >
+                      <CoreCard
+                        scale={0.45}
+                        name={card.name}
+                        aura={card.aura}
+                        skill={card.skill}
+                        stamina={card.stamina}
+                        totalScore={card.total_score}
+                        imageUrl={card.image_url}
+                        rarity={card.rarity}
+                      />
                       {/* Remove overlay */}
-                      <div className="absolute inset-0 z-10 bg-red-950/0 group-hover:bg-red-950/70 transition-colors rounded-2xl flex items-center justify-center">
-                        <span className="text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute inset-0 z-10 bg-red-950/0 group-hover:bg-red-950/70 transition-colors rounded-3xl flex items-center justify-center">
+                        <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                           Remove
                         </span>
-                      </div>
-
-                      {/* Card image */}
-                      <div className="aspect-[3/4] bg-gray-800 overflow-hidden">
-                        {card.image_url ? (
-                          <img
-                            src={card.image_url}
-                            alt={card.name}
-                            className="w-full h-full object-cover"
-                            onError={e => { e.currentTarget.style.display = 'none' }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl bg-gray-800">🃏</div>
-                        )}
-                      </div>
-
-                      {/* Card info */}
-                      <div className="bg-gray-900 p-1.5">
-                        <p className="text-xs font-bold truncate leading-tight">{card.name}</p>
-                        <div className="mt-1">
-                          <CardStats totalScore={card.total_score} aura={card.aura} skill={card.skill} stamina={card.stamina} size="sm" />
-                        </div>
                       </div>
                     </div>
                   ))}
@@ -569,7 +562,8 @@ export default function DeckBuilder() {
                   {Array.from({ length: Math.max(0, MAX_CARDS - deckCards.length) }).map((_, i) => (
                     <div
                       key={`empty-${i}`}
-                      className="rounded-2xl border-2 border-dashed border-gray-800 aspect-[3/4] flex items-center justify-center opacity-30"
+                      className="rounded-3xl border-2 border-dashed border-gray-800 flex items-center justify-center opacity-30"
+                      style={{ width: 320 * 0.45, height: 448 * 0.45 }}
                     >
                       <span className="text-gray-700 text-xl">+</span>
                     </div>
