@@ -158,40 +158,40 @@ export default function Home() {
       </div>
       <div className="fixed inset-0 bg-black/55 -z-10" />
       <div className="flex justify-center px-6 py-12">
-      <div className="relative z-10 bg-gray-900/80 backdrop-blur p-10 rounded-3xl w-full max-w-md shadow-2xl border border-gray-800">
-        <div className="text-center mb-10">
-          <SparkleTitle>VeeFriends TCG</SparkleTitle>
-          <p className="text-gray-400 mt-4">Compete & Collect Online</p>
+      <div className="relative z-10 bg-gray-900/80 backdrop-blur p-14 rounded-3xl w-full max-w-[38rem] shadow-2xl border border-gray-800">
+        <div className="text-center mb-14">
+          <SparkleTitle textSize="text-5xl">VeeFriends TCG</SparkleTitle>
+          <p className="text-gray-400 mt-5 text-lg">Compete & Collect Online</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           <input
             type="email"
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-blue-500 focus:shadow-md focus:shadow-blue-500/20"
+            className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-8 py-5 text-xl focus:outline-none focus:border-blue-500 focus:shadow-md focus:shadow-blue-500/20"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-blue-500 focus:shadow-md focus:shadow-blue-500/20"
+            className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-8 py-5 text-xl focus:outline-none focus:border-blue-500 focus:shadow-md focus:shadow-blue-500/20"
           />
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-5 pt-5">
             <button
               onClick={signIn}
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 py-4 rounded-2xl text-lg font-medium transition"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 py-5 rounded-2xl text-xl font-medium transition"
             >
               Sign In
             </button>
             <button
               onClick={signUp}
               disabled={loading}
-              className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 py-4 rounded-2xl text-lg font-medium transition"
+              className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 py-5 rounded-2xl text-xl font-medium transition"
             >
               Sign Up
             </button>
@@ -199,12 +199,12 @@ export default function Home() {
         </div>
 
         {authError && (
-          <p className={`text-center text-sm mt-6 ${authError.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-center text-base mt-8 ${authError.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
             {authError}
           </p>
         )}
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-base text-gray-500 mt-5">
           First time? Click Sign Up and check your email.
         </p>
       </div>

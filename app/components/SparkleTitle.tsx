@@ -11,7 +11,7 @@ const SPARKLES = [
   { left: '10%',  top: '75%',  size: 16, dur: '2.3s', delay: '1.7s' },
 ]
 
-export default function SparkleTitle({ children }: { children: React.ReactNode }) {
+export default function SparkleTitle({ children, textSize = 'text-7xl' }: { children: React.ReactNode; textSize?: string }) {
   return (
     <div className="w-full text-center">
     <div className="relative inline-block">
@@ -30,7 +30,7 @@ export default function SparkleTitle({ children }: { children: React.ReactNode }
           ✦
         </span>
       ))}
-      <h1 className="menu-title text-7xl font-black tracking-tight drop-shadow-2xl whitespace-nowrap">
+      <h1 className={`menu-title ${textSize} font-black tracking-tight drop-shadow-2xl whitespace-nowrap`}>
         {children}
       </h1>
     </div>
