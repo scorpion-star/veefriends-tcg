@@ -172,7 +172,7 @@ export default function JourneyPage() {
     const params = new URLSearchParams({
       journeyOpponentId: opponent.id,
       opponentName: opponent.name,
-      difficulty: opponent.difficulty,
+      difficulty: String(opponent.difficulty),
       coinsReward: String(opponent.coins_reward),
       deckId,
       ...(opponent.avatar_url ? { opponentAvatar: opponent.avatar_url } : {}),
