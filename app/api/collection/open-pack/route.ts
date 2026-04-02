@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   // Fetch all cards
   const { data: allCards, error: cardErr } = await admin
     .from('cards')
-    .select('id, rarity, name, aura, skill, stamina, total_score, image_url')
+    .select('id, rarity, name, aura, skill, stamina, total_score')
 
   if (cardErr || !allCards || allCards.length === 0) {
     return NextResponse.json({ error: 'No cards available' }, { status: 500 })

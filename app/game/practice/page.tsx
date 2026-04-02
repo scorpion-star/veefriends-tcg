@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Card, Attribute, TieBank, EMPTY_BANK, shuffle, RARITY_MULTIPLIER } from '@/lib/game-types'
+import { getCardArtUrl } from '@/lib/card-art'
 import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
 import CoreCard from '@/app/components/CoreCard'
@@ -983,7 +984,7 @@ function PracticePageInner() {
                   skill={revealHumanCard?.skill ?? 0}
                   stamina={revealHumanCard?.stamina ?? 0}
                   totalScore={revealHumanCard?.total_score ?? 0}
-                  imageUrl={revealHumanCard?.image_url ?? null}
+                  imageUrl={revealHumanCard ? getCardArtUrl(revealHumanCard.id) : null}
                   rarity={revealHumanCard?.rarity ?? 'Core'}
                 />
                 {gameState.lastRound.attribute !== 'sprint' ? (
@@ -1014,7 +1015,7 @@ function PracticePageInner() {
                   skill={revealCpuCard?.skill ?? 0}
                   stamina={revealCpuCard?.stamina ?? 0}
                   totalScore={revealCpuCard?.total_score ?? 0}
-                  imageUrl={revealCpuCard?.image_url ?? null}
+                  imageUrl={revealCpuCard ? getCardArtUrl(revealCpuCard.id) : null}
                   rarity={revealCpuCard?.rarity ?? 'Core'}
                 />
                 {gameState.lastRound.attribute !== 'sprint' ? (
@@ -1219,7 +1220,7 @@ function PracticePageInner() {
             skill={myCard.skill}
             stamina={myCard.stamina}
             totalScore={myCard.total_score}
-            imageUrl={myCard.image_url}
+            imageUrl={getCardArtUrl(myCard.id)}
             rarity={myCard.rarity}
           />
         </div>

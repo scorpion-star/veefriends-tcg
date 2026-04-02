@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CoreCard from '@/app/components/CoreCard'
+import { getCardArtUrl } from '@/lib/card-art'
 import CoinIcon from '@/app/components/CoinIcon'
 
 type Card = {
   id: number
   name: string
   rarity: string
-  image_url: string | null
   aura: number
   skill: number
   stamina: number
@@ -199,7 +199,7 @@ export default function StorePage() {
                           skill={card.skill}
                           stamina={card.stamina}
                           totalScore={card.total_score}
-                          imageUrl={card.image_url}
+                          imageUrl={getCardArtUrl(card.id)}
                           rarity={card.rarity}
                         />
                         <div className="flex flex-col items-center gap-1" style={{ width: 320 * 0.55 }}>

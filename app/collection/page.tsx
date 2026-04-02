@@ -5,6 +5,7 @@ import { createClient } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CoreCard from '../components/CoreCard'
+import { getCardArtUrl } from '@/lib/card-art'
 
 type Card = {
   id: number
@@ -15,7 +16,6 @@ type Card = {
   total_score: number
   rarity: string
   rarity_points: number
-  image_url: string | null
   quantity: number
 }
 
@@ -26,7 +26,7 @@ type PackStatus = {
   lastOpened?: string   // ISO timestamp — used for the live countdown
 }
 
-type RevealedCard = { id: number; name: string; rarity: string; image_url?: string | null; aura?: number; skill?: number; stamina?: number; total_score?: number }
+type RevealedCard = { id: number; name: string; rarity: string; aura?: number; skill?: number; stamina?: number; total_score?: number }
 
 type AnimState = {
   cards: RevealedCard[]
@@ -230,7 +230,7 @@ export default function Collection() {
                         skill={card.skill ?? 0}
                         stamina={card.stamina ?? 0}
                         totalScore={card.total_score ?? 0}
-                        imageUrl={card.image_url ?? null}
+                        imageUrl={getCardArtUrl(card.id)}
                         rarity={card.rarity}
                       />
                     </div>
@@ -387,7 +387,7 @@ export default function Collection() {
                     skill={card.skill}
                     stamina={card.stamina}
                     totalScore={card.total_score}
-                    imageUrl={card.image_url}
+                    imageUrl={getCardArtUrl(card.id)}
                     rarity={card.rarity}
                   />
                   {card.quantity > 1 && (

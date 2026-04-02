@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAuthClient, createAdminClient } from '@/lib/supabase-server'
 import { GameState, PlayerState, shuffle, drawCard } from '@/lib/game-types'
 
+type AdminClient = ReturnType<typeof createAdminClient>
+
+/** Ensures every distinct card id exists in `cards` (avoids multiplayer "Card data missing"). */
+async function validateDeckCardsExist(
+  admin: AdminClient,
+  cardIds: number[],
+): Promise<{ ok: true } | { ok: false; missing: number[] }> {
+  const unique = [...new Set(cardIds)]
+  if (unique.length === 0) return { ok: false, missing: [] }
+  const { data } = await admin.from('cards').select('id').in('id', unique)
+  const found = new Set((data ?? []).map((c: { id: number }) => c.id))
+  const missing = unique.filter(id => !found.has(id))
+  if (missing.length === 0) return { ok: true }
+  return { ok: false, missing }
+}
+
 function buildPlayerState(userId: string, email: string, cardIds: number[]): PlayerState {
   const deck = shuffle(cardIds)
   const state: PlayerState = {
@@ -44,6 +60,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Deck must have exactly 20 cards' }, { status: 400 })
   }
 
+  const myDeckCheck = await validateDeckCardsExist(admin, deck.card_ids as number[])
+  if (!myDeckCheck.ok) {
+    return NextResponse.json(
+      {
+        error: 'Deck references unknown cards',
+        details: 'Every card in your deck must exist in the card catalog.',
+        missingIds: myDeckCheck.missing,
+      },
+      { status: 400 },
+    )
+  }
+
   // ── QUICK MATCH ──────────────────────────────────────────────────────────
   if (type === 'quick') {
     // Look for someone already waiting
@@ -69,6 +97,16 @@ export async function POST(req: NextRequest) {
         await admin.from('matchmaking_queue').upsert(
           { user_id: user.id, deck_id: deckId, game_id: null },
           { onConflict: 'user_id' }
+        )
+        return NextResponse.json({ status: 'queued' })
+      }
+
+      const oppDeckCheck = await validateDeckCardsExist(admin, opponentDeck.card_ids as number[])
+      if (!oppDeckCheck.ok) {
+        await admin.from('matchmaking_queue').delete().eq('user_id', waiting.user_id)
+        await admin.from('matchmaking_queue').upsert(
+          { user_id: user.id, deck_id: deckId, game_id: null, user_email: user.email },
+          { onConflict: 'user_id' },
         )
         return NextResponse.json({ status: 'queued' })
       }
@@ -176,6 +214,28 @@ export async function POST(req: NextRequest) {
     }
     if (game.player1_id === user.id) {
       return NextResponse.json({ error: 'You cannot join your own room' }, { status: 400 })
+    }
+
+    const { data: hostDeck } = await admin
+      .from('decks')
+      .select('card_ids')
+      .eq('id', game.player1_deck_id)
+      .single()
+
+    if (!hostDeck || (hostDeck.card_ids as number[]).length !== 20) {
+      return NextResponse.json({ error: 'Host deck is invalid; ask them to recreate the room' }, { status: 400 })
+    }
+
+    const hostDeckCheck = await validateDeckCardsExist(admin, hostDeck.card_ids as number[])
+    if (!hostDeckCheck.ok) {
+      return NextResponse.json(
+        {
+          error: 'Host deck references unknown cards',
+          details: 'The room cannot be started until the host fixes their deck.',
+          missingIds: hostDeckCheck.missing,
+        },
+        { status: 400 },
+      )
     }
 
     const existing = game.game_state as { player1: PlayerState }

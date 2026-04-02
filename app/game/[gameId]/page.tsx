@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import {
   GameState, Card, Attribute, PlayerKey,
 } from '@/lib/game-types'
+import { getCardArtUrl } from '@/lib/card-art'
 import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
 import CoreCard from '@/app/components/CoreCard'
@@ -403,7 +404,7 @@ export default function GameRoomPage() {
             <div className="flex gap-8 items-start justify-center">
               <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-gray-400 font-medium">You</p>
-                {revealMyCard && <CoreCard scale={0.5} name={revealMyCard.name} aura={revealMyCard.aura} skill={revealMyCard.skill} stamina={revealMyCard.stamina} totalScore={revealMyCard.total_score} imageUrl={revealMyCard.image_url} rarity={revealMyCard.rarity} />}
+                {revealMyCard && <CoreCard scale={0.5} name={revealMyCard.name} aura={revealMyCard.aura} skill={revealMyCard.skill} stamina={revealMyCard.stamina} totalScore={revealMyCard.total_score} imageUrl={getCardArtUrl(revealMyCard.id)} rarity={revealMyCard.rarity} />}
                 {state.lastRound.attribute === 'sprint'
                   ? <p className="text-6xl font-black text-yellow-400 drop-shadow-lg tabular-nums">⚡ {revealMyVal}</p>
                   : <p className={`text-6xl font-black drop-shadow-lg tabular-nums ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealMyVal}</p>
@@ -421,7 +422,7 @@ export default function GameRoomPage() {
 
               <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-gray-400 font-medium">{opponentLabel}</p>
-                {revealTheirCard && <CoreCard scale={0.5} name={revealTheirCard.name} aura={revealTheirCard.aura} skill={revealTheirCard.skill} stamina={revealTheirCard.stamina} totalScore={revealTheirCard.total_score} imageUrl={revealTheirCard.image_url} rarity={revealTheirCard.rarity} />}
+                {revealTheirCard && <CoreCard scale={0.5} name={revealTheirCard.name} aura={revealTheirCard.aura} skill={revealTheirCard.skill} stamina={revealTheirCard.stamina} totalScore={revealTheirCard.total_score} imageUrl={getCardArtUrl(revealTheirCard.id)} rarity={revealTheirCard.rarity} />}
                 {state.lastRound.attribute === 'sprint'
                   ? <p className="text-6xl font-black text-yellow-400 drop-shadow-lg tabular-nums">⚡ {revealTheirVal}</p>
                   : <p className={`text-6xl font-black drop-shadow-lg tabular-nums ${ATTR_COLOR[state.lastRound.attribute]}`}>{revealTheirVal}</p>
@@ -653,7 +654,7 @@ export default function GameRoomPage() {
             skill={myCard.skill}
             stamina={myCard.stamina}
             totalScore={myCard.total_score}
-            imageUrl={myCard.image_url}
+            imageUrl={getCardArtUrl(myCard.id)}
             rarity={myCard.rarity}
           />
         </div>

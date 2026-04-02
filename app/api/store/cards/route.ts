@@ -75,7 +75,7 @@ export async function GET() {
 
   const { data: cards, error } = await admin
     .from('cards')
-    .select('id, name, rarity, image_url, aura, skill, stamina, total_score')
+    .select('id, name, rarity, aura, skill, stamina, total_score')
     .in('id', allIds)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
