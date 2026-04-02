@@ -23,7 +23,7 @@ export const BACKGROUNDS: Background[] = [
     id: 'arena',
     name: 'Arena',
     css: "url('/bg.jpg') center/cover fixed, #050510",
-    kenBurns: true,
+    kenBurns: false,
   },
   {
     id: 'space',
