@@ -150,12 +150,12 @@ export default function Home() {
       </div>
       <div className="fixed inset-0 bg-black/55 -z-10" />
       <div className="flex justify-center px-6 py-12">
-      <div className="relative z-10 bg-gray-900/80 backdrop-blur p-14 rounded-3xl w-full max-w-[38rem] shadow-2xl border border-gray-800">
+      <div className="relative z-10 bg-transparent backdrop-blur p-14 rounded-3xl w-full max-w-[38rem] shadow-2xl border border-gray-800">
         <div className="text-center mb-14">
-          <div className="mx-auto mb-4 h-20 w-auto relative" style={{ width: '11rem', height: '5rem' }}>
+          <div className="mx-auto mb-4 h-[12.5rem] w-auto relative" style={{ width: '27.5rem', height: '12.5rem' }}>
             <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} />
           </div>
-          <p className="text-gray-400 mt-5 text-lg">Compete & Collect Online</p>
+          <p className="text-white mt-5 text-lg">Compete & Collect Online</p>
         </div>
 
         <div className="space-y-8">
