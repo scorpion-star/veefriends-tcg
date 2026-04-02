@@ -247,6 +247,8 @@ body {
   font-weight: 700;
 }
 
+.neon-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
   filter: none;
 }
