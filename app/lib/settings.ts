@@ -2,6 +2,8 @@ export type BackgroundId =
   | 'arena'
   | 'space'
   | 'neon'
+  | 'bg1'
+  | 'bg2'
   | 'inferno'
   | 'emerald'
   | 'ocean'
@@ -26,12 +28,22 @@ export const BACKGROUNDS: Background[] = [
   {
     id: 'space',
     name: 'Deep Space',
-    css: 'radial-gradient(ellipse at 30% 20%, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+    css: "url('/bg1.jpg') center/cover fixed, #050510",
   },
   {
     id: 'neon',
     name: 'Neon Grid',
-    css: 'linear-gradient(160deg, #070714 0%, #0d1b2a 40%, #1a0a2e 100%)',
+    css: "url('/bg2.png') center/cover fixed, #050510",
+  },
+  {
+    id: 'bg1',
+    name: 'Custom BG1',
+    css: "url('/bg1.jpg') center/cover fixed, #050510",
+  },
+  {
+    id: 'bg2',
+    name: 'Custom BG2',
+    css: "url('/bg2.png') center/cover fixed, #050510",
   },
   {
     id: 'inferno',
