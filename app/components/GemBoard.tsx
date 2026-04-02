@@ -113,7 +113,7 @@ export function TieBankSidebar({ tieBank }: { tieBank: Points }) {
         : 'bg-gray-900/80 border-gray-700'
     }`}>
       <div className="text-base mb-1">💎</div>
-      <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Bank</div>
+      <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">TIE BANK</div>
       {hasGems ? (
         <div className="space-y-1">
           {tieBank.aura    > 0 && <div className="text-red-400    text-xs font-bold">{tieBank.aura}    Aura</div>}
