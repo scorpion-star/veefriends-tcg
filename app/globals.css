@@ -218,6 +218,8 @@ body {
 
 .neon-btn:disabled {
   opacity: 0.3;
+  cursor: not-allowed;
+  filter: none;
 }
 
 /* ── Readable text enhancement for dark backgrounds ───────────────────────── */
