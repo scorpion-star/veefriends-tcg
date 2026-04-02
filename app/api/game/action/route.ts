@@ -132,8 +132,10 @@ export async function POST(req: NextRequest) {
     if (state.currentRound.currentDefender !== myKey) return err('Not your turn to respond')
 
     const attribute = state.currentRound.attribute!
-    const p1CardId = state.player1.currentCard ?? null
-    const p2CardId = state.player2.currentCard ?? null
+    const p1CardId = state.player1.currentCard
+    const p2CardId = state.player2.currentCard
+    if (!p1CardId || !p2CardId) return err('Card IDs missing from game state')
+    
     const cardPair = await fetchGameCards(admin, p1CardId, p2CardId)
     if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'accept cards not available' }, { status: 400 })
 
@@ -178,8 +180,10 @@ export async function POST(req: NextRequest) {
     // After 3 declines (all attributes declined), force a Score Faceoff
     if (state.currentRound.declinedAttributes.length >= 3) {
       state.currentRound.attribute = null
-      const p1CardId = state.player1.currentCard ?? null
-      const p2CardId = state.player2.currentCard ?? null
+      const p1CardId = state.player1.currentCard
+      const p2CardId = state.player2.currentCard
+      if (!p1CardId || !p2CardId) return err('Card IDs missing from game state')
+      
       const cardPair = await fetchGameCards(admin, p1CardId, p2CardId)
       if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'decline faceoff cards not available' }, { status: 400 })
 
