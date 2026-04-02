@@ -99,7 +99,7 @@ export default function Home() {
 
         <div className="flex justify-center px-6 py-12">
         <div className="relative z-10 text-center max-w-md w-full">
-          <div className="mx-auto mb-6 h-20 w-auto relative" style={{ width: '11rem', height: '5rem' }}>
+          <div className="mx-auto mb-6 h-20 w-auto relative" style={{ width: '55rem', height: '25rem' }}>
             <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} />
           </div>
           <div className="flex flex-col items-center gap-2 mt-10 mb-8">
