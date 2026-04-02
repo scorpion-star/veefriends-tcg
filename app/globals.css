@@ -134,6 +134,9 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px rgba(0, 0, 0, 0.85);
+  text-stroke: 2px rgba(0, 0, 0, 0.85);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.65), 0 0 6px rgba(255,255,255,0.35);
   animation: menu-shimmer 3s linear infinite;
   filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.5));
 }
