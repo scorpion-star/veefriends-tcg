@@ -97,12 +97,15 @@ export default function Home() {
           <UsernameSetup onComplete={setUsername} />
         )}
 
-        <div className="flex justify-center px-6 py-12">
-        <div className="relative z-10 text-center max-w-md w-full">
-          <div className="relative mx-auto mb-6" style={{ width: '22rem', height: '10rem' }}>
-            <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} />
+        <div className="flex justify-center px-6 pt-2 pb-10">
+        <div className="relative z-10 text-center w-full flex flex-col items-center">
+          <div
+            className="relative mx-auto z-10 shrink-0"
+            style={{ width: 'min(44rem, calc(100vw - 3rem))', height: '20rem' }}
+          >
+            <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} priority />
           </div>
-          <div className="flex flex-col items-center gap-2 mt-2 mb-4">
+          <div className="flex flex-col items-center gap-2 -mt-14 relative z-20 mb-3 w-full max-w-md">
             <AvatarUpload
               userId={user.id}
               avatarUrl={avatarUrl}
@@ -110,11 +113,11 @@ export default function Home() {
               size="lg"
               onUpload={setAvatarUrl}
             />
-            <p className="text-xl font-bold text-white">
+            <p className="text-xl font-bold text-white drop-shadow-lg">
               {username ?? '…'}
             </p>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 w-full max-w-md -mt-3">
             <NeonButton variant="primary" size="xl" fullWidth onClick={() => router.push('/play')}>
               ⚔ Play Now
             </NeonButton>
