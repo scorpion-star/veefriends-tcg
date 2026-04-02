@@ -314,7 +314,7 @@ export default function GameRoomPage() {
         className="min-h-screen flex items-center justify-center text-white p-6 relative"
         style={{ background: background.css }}
       >
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-black/35" />
         <div className="relative z-10 text-center max-w-md">
           <div className={`text-9xl mb-6 drop-shadow-2xl ${iWon ? 'animate-bounce' : ''}`}>{iWon ? '🏆' : '💀'}</div>
           <h1 className={`text-6xl font-black mb-4 ${iWon ? 'text-yellow-300 drop-shadow-[0_0_30px_rgba(253,224,71,0.6)]' : 'text-gray-300'}`}>

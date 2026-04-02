@@ -11,7 +11,7 @@ import NeonButton from './components/NeonButton'
 import { useSettings } from './components/SettingsContext'
 
 const BG = "min-h-screen relative"
-const OVERLAY = "absolute inset-0 bg-black/55"
+const OVERLAY = "absolute inset-0 bg-black/30"
 
 export default function Home() {
   const { background } = useSettings()

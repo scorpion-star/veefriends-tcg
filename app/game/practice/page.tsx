@@ -832,7 +832,7 @@ function PracticePageInner() {
         className="min-h-screen flex items-center justify-center text-white p-6 relative"
         style={{ background: background.css }}
       >
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-black/35" />
         <div className="relative z-10 text-center max-w-md">
           {iWon ? (
             <div className="mb-6 flex justify-center">
