@@ -15,6 +15,23 @@ function claimBank(state: GameState, winner: PlayerKey): TieBank {
   return claimed
 }
 
+type CardPair = { p1Card: Card; p2Card: Card }
+
+async function fetchGameCards(admin: ReturnType<typeof createAdminClient>, p1CardId: number | null, p2CardId: number | null): Promise<CardPair | null> {
+  if (p1CardId == null || p2CardId == null) return null
+  if (p1CardId === p2CardId) {
+    const { data: cards } = await admin.from('cards').select('*').eq('id', p1CardId)
+    if (!cards || cards.length === 0) return null
+    return { p1Card: cards[0], p2Card: cards[0] }
+  }
+  const { data: cards } = await admin.from('cards').select('*').in('id', [p1CardId, p2CardId])
+  if (!cards || cards.length < 2) return null
+  const p1Card = cards.find((c: Card) => c.id === p1CardId)
+  const p2Card = cards.find((c: Card) => c.id === p2CardId)
+  if (!p1Card || !p2Card) return null
+  return { p1Card, p2Card }
+}
+
 export async function POST(req: NextRequest) {
   const authClient = await createAuthClient()
   const admin = createAdminClient()
@@ -65,13 +82,12 @@ export async function POST(req: NextRequest) {
     if (!canSprint) return err('Cannot use Sprint Token right now')
     if (state.sprintUsed[myKey]) return err('You have already used your Sprint Token')
 
-    const p1CardId = state.player1.currentCard!
-    const p2CardId = state.player2.currentCard!
-    const { data: cards } = await admin.from('cards').select('*').in('id', [p1CardId, p2CardId])
-    if (!cards || cards.length < 2) return NextResponse.json({ error: 'Card data missing' }, { status: 500 })
+    const p1CardId = state.player1.currentCard ?? null
+    const p2CardId = state.player2.currentCard ?? null
+    const cardPair = await fetchGameCards(admin, p1CardId, p2CardId)
+    if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'sprint cards not available' }, { status: 400 })
 
-    const p1Card = cards.find((c: Card) => c.id === p1CardId)!
-    const p2Card = cards.find((c: Card) => c.id === p2CardId)!
+    const { p1Card, p2Card } = cardPair
 
     // Sprint Token requires the acting player to hold a Rare or higher card
     const myCard = myKey === 'player1' ? p1Card : p2Card
@@ -114,13 +130,12 @@ export async function POST(req: NextRequest) {
     if (state.currentRound.currentDefender !== myKey) return err('Not your turn to respond')
 
     const attribute = state.currentRound.attribute!
-    const p1CardId = state.player1.currentCard!
-    const p2CardId = state.player2.currentCard!
-    const { data: cards } = await admin.from('cards').select('*').in('id', [p1CardId, p2CardId])
-    if (!cards || cards.length < 2) return NextResponse.json({ error: 'Card data missing' }, { status: 500 })
+    const p1CardId = state.player1.currentCard ?? null
+    const p2CardId = state.player2.currentCard ?? null
+    const cardPair = await fetchGameCards(admin, p1CardId, p2CardId)
+    if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'accept cards not available' }, { status: 400 })
 
-    const p1Card = cards.find((c: Card) => c.id === p1CardId)!
-    const p2Card = cards.find((c: Card) => c.id === p2CardId)!
+    const { p1Card, p2Card } = cardPair
     const p1Val: number = p1Card[attribute]
     const p2Val: number = p2Card[attribute]
 
@@ -161,13 +176,12 @@ export async function POST(req: NextRequest) {
     // After 3 declines (all attributes declined), force a Score Faceoff
     if (state.currentRound.declinedAttributes.length >= 3) {
       state.currentRound.attribute = null
-      const p1CardId = state.player1.currentCard!
-      const p2CardId = state.player2.currentCard!
-      const { data: cards } = await admin.from('cards').select('*').in('id', [p1CardId, p2CardId])
-      if (!cards || cards.length < 2) return NextResponse.json({ error: 'Card data missing' }, { status: 500 })
+      const p1CardId = state.player1.currentCard ?? null
+      const p2CardId = state.player2.currentCard ?? null
+      const cardPair = await fetchGameCards(admin, p1CardId, p2CardId)
+      if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'decline faceoff cards not available' }, { status: 400 })
 
-      const p1Card = cards.find((c: Card) => c.id === p1CardId)!
-      const p2Card = cards.find((c: Card) => c.id === p2CardId)!
+      const { p1Card, p2Card } = cardPair
       const p1Score = Math.round(p1Card.total_score * RARITY_MULTIPLIER[p1Card.rarity])
       const p2Score = Math.round(p2Card.total_score * RARITY_MULTIPLIER[p2Card.rarity])
 
