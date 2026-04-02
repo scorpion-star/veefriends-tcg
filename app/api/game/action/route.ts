@@ -82,8 +82,10 @@ export async function POST(req: NextRequest) {
     if (!canSprint) return err('Cannot use Sprint Token right now')
     if (state.sprintUsed[myKey]) return err('You have already used your Sprint Token')
 
-    const p1CardId = state.player1.currentCard ?? null
-    const p2CardId = state.player2.currentCard ?? null
+    const p1CardId = state.player1.currentCard
+    const p2CardId = state.player2.currentCard
+    if (!p1CardId || !p2CardId) return err('Card IDs missing from game state')
+    
     const cardPair = await fetchGameCards(admin, p1CardId, p2CardId)
     if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'sprint cards not available' }, { status: 400 })
 
