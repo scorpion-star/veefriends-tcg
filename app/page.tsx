@@ -102,7 +102,7 @@ export default function Home() {
           <div className="relative mx-auto mb-6" style={{ width: '22rem', height: '10rem' }}>
             <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} />
           </div>
-          <div className="flex flex-col items-center gap-2 mt-10 mb-8">
+          <div className="flex flex-col items-center gap-2 mt-2 mb-4">
             <AvatarUpload
               userId={user.id}
               avatarUrl={avatarUrl}
