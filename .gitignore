@@ -42,3 +42,4 @@ next-env.d.ts
 
 # bug reports (server-side text files, do not commit)
 /bug-reports/
+.claude/
