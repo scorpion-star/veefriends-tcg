@@ -218,6 +218,33 @@ body {
 
 .neon-btn:disabled {
   opacity: 0.3;
+}
+
+/* ── Readable text enhancement for dark backgrounds ───────────────────────── */
+.text-readable,
+.text-gray-400,
+.text-gray-500,
+.text-gray-300 {
+  color: white !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.45);
+  background: rgba(0, 0, 0, 0.40);
+  backdrop-filter: blur(4px);
+  border-radius: 0.35rem;
+  padding: 0.12rem 0.35rem;
+  line-height: 1.35;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.text-readable {
+  color: white;
+  text-shadow: 0 0 10px rgba(0,0,0,0.75), 0 0 3px rgba(255,255,255,0.40);
+  background: rgba(0,0,0,0.45);
+  padding: 0.14rem 0.45rem;
+  border-radius: 0.45rem;
+  font-weight: 700;
+}
+
   cursor: not-allowed;
   filter: none;
 }
