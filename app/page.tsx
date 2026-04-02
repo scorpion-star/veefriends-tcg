@@ -98,6 +98,7 @@ export default function Home() {
 
         <div className="flex justify-center px-6 py-12">
         <div className="relative z-10 text-center max-w-md w-full">
+          <img src="/vf-logo.png" alt="VeeFriends logo" className="mx-auto h-20 object-contain mb-6" />
           <div className="flex flex-col items-center gap-2 mt-10 mb-8">
             <AvatarUpload
               userId={user.id}
@@ -148,6 +149,7 @@ export default function Home() {
       <div className="flex justify-center px-6 py-12">
       <div className="relative z-10 bg-gray-900/80 backdrop-blur p-14 rounded-3xl w-full max-w-[38rem] shadow-2xl border border-gray-800">
         <div className="text-center mb-14">
+          <img src="/vf-logo.png" alt="VeeFriends logo" className="mx-auto h-20 object-contain mb-4" />
           <p className="text-gray-400 mt-5 text-lg">Compete & Collect Online</p>
         </div>
 
