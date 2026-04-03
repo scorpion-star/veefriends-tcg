@@ -27,7 +27,7 @@ type PackStatus = {
   lastOpened?: string   // ISO timestamp — used for the live countdown
 }
 
-type RevealedCard = { id: number; name: string; rarity: string; aura?: number; skill?: number; stamina?: number; total_score?: number }
+type RevealedCard = { id: number; name: string; rarity: string; aura?: number; skill?: number; stamina?: number; total_score?: number; image_url?: string | null }
 
 type AnimState = {
   cards: RevealedCard[]
