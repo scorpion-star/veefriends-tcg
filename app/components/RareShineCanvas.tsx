@@ -50,7 +50,7 @@ export default function RareShineCanvas({ mouseRef, width, height }: Props) {
     let mounted = true
 
     app.init({ backgroundAlpha: 0, width, height, antialias: true }).then(() => {
-      if (!mounted) { app.destroy(true); return }
+      if (!mounted) { app.destroy({ removeView: true }); return }
 
       // Set the canvas to screen blend so it brightens the card beneath
       const canvas = app.canvas as HTMLCanvasElement
@@ -131,7 +131,7 @@ export default function RareShineCanvas({ mouseRef, width, height }: Props) {
     return () => {
       mounted = false
       cancelAnimationFrame(animId!)
-      app.destroy(true)
+      app.destroy({ removeView: true })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
