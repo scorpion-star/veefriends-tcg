@@ -135,14 +135,6 @@ export default function Home() {
         </div>
         </div>
 
-        <NeonButton
-          variant="ghost"
-          size="sm"
-          className="fixed bottom-5 right-5 z-30 shadow-lg shadow-black/40"
-          onClick={signOut}
-        >
-          Sign Out
-        </NeonButton>
       </div>
     )
   }

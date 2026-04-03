@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { validateUsername } from '@/lib/profanity'
 import AvatarUpload from '@/app/components/AvatarUpload'
 import NeonButton from '@/app/components/NeonButton'
+import { createClient } from '@/lib/supabase'
 
 const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000
 
 export default function ProfilePage() {
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
 
   const [userId, setUserId] = useState<string | null>(null)
   const [email, setEmail] = useState('')
@@ -156,12 +158,18 @@ export default function ProfilePage() {
         </section>
 
         {/* Account section */}
-        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-3">
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Account</h2>
           <div className="flex items-center justify-between">
             <span className="text-gray-400 text-sm">Email</span>
             <span className="text-gray-300 text-sm">{email}</span>
           </div>
+          <NeonButton variant="ghost" size="md" fullWidth onClick={async () => {
+            await supabase.auth.signOut()
+            router.push('/')
+          }}>
+            Sign Out
+          </NeonButton>
         </section>
 
       </div></div>
