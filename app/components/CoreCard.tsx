@@ -233,7 +233,7 @@ export default function CoreCard({
 
           {/* Rare foil overlay */}
           {rarity === 'Rare' && (
-            <RareShineCanvas mouseRef={shinePosRef} width={BASE_W} height={BASE_H} />
+            <RareShineCanvas width={BASE_W} height={BASE_H} />
           )}
 
         </div>

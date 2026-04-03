@@ -856,7 +856,7 @@ function PracticePageInner() {
               {journeyOpponentAvatar ? (
                 <img src={journeyOpponentAvatar} alt={journeyOpponentName ?? 'CPU'} className="w-24 h-24 rounded-full object-cover border-2 border-gray-600" />
               ) : (
-                <div className="text-9xl drop-shadow-2xl">🤖</div>
+                <div className="w-24 h-24 rounded-full bg-gray-700 border-2 border-gray-600" />
               )}
             </div>
           )}
@@ -1079,7 +1079,6 @@ function PracticePageInner() {
         {/* CPU row */}
         <div className="flex items-center gap-4 shrink-0">
           <div className="relative w-24 h-24 rounded-full overflow-hidden border-3 border-gray-600 bg-gray-800 flex items-center justify-center shrink-0">
-            <span className="text-5xl">🤖</span>
             <img
               src={journeyOpponentAvatar ?? '/cpu-avatar.png'}
               alt="CPU"

@@ -277,7 +277,6 @@ export default function PlayPage() {
 
             {/* Practice vs CPU */}
             <Link href="/game/practice" className="neon-game-card neon-game-card--green p-6 text-left block">
-              <div className="text-3xl mb-3">🤖</div>
               <h3 className="text-xl font-bold mb-1">Practice vs CPU</h3>
               <p className="text-green-300/70 text-sm">Easy · Medium · Hard difficulty</p>
             </Link>
