@@ -210,15 +210,15 @@ export default function CoreCard({
 
           {/* Stats — Aura / Skill / Stamina */}
           <div className="px-3 mt-1 flex gap-2">
-            <div className="flex-1 bg-amber-50/95 rounded-xl py-2 border-2 border-red-500 text-center shadow-md">
+            <div className="flex-1 rounded-xl py-2 border-2 border-red-500 text-center shadow-md" style={{ background: '#e8d5b0' }}>
               <p className="text-red-600 font-black text-[11px] tracking-widest">AURA</p>
               <p className="text-red-600 text-[32px] font-black leading-none mt-0.5">{aura}</p>
             </div>
-            <div className="flex-1 bg-amber-50/95 rounded-xl py-2 border-2 border-green-500 text-center shadow-md">
+            <div className="flex-1 rounded-xl py-2 border-2 border-green-500 text-center shadow-md" style={{ background: '#e8d5b0' }}>
               <p className="text-green-600 font-black text-[11px] tracking-widest">SKILL</p>
               <p className="text-green-600 text-[32px] font-black leading-none mt-0.5">{skill}</p>
             </div>
-            <div className="flex-1 bg-amber-50/95 rounded-xl py-2 border-2 border-yellow-500 text-center shadow-md">
+            <div className="flex-1 rounded-xl py-2 border-2 border-yellow-500 text-center shadow-md" style={{ background: '#e8d5b0' }}>
               <p className="text-yellow-600 font-black text-[11px] tracking-widest">STAMINA</p>
               <p className="text-yellow-600 text-[32px] font-black leading-none mt-0.5">{stamina}</p>
             </div>
