@@ -4,6 +4,7 @@
 // `scale` controls display size. Outer div takes (320*scale × 448*scale) px in layout.
 
 import { useRef, useCallback, useEffect } from 'react'
+import RareShineCanvas, { type MouseState } from './RareShineCanvas'
 
 const BASE_W = 320
 const BASE_H = 448
@@ -24,13 +25,13 @@ const THEME: Record<string, {
   scoreBg: string; scoreText: string; bar: string; barText: string
 }> = {
   Core: {
-    border:    'border-yellow-500',
-    bg:        'from-yellow-500 via-amber-500 to-yellow-600',
-    banner:    'from-amber-600 to-yellow-500',
-    frame:     'border-yellow-400',
-    scoreBg:   'from-yellow-400 to-amber-500',
-    scoreText: 'text-amber-950',
-    bar:       'from-amber-700 to-yellow-600',
+    border:    'border-[#c4a882]',
+    bg:        'from-[#e8d5b0] via-[#d4b896] to-[#c2a07a]',
+    banner:    'from-[#b8956a] to-[#d4b896]',
+    frame:     'border-[#dfc9a8]',
+    scoreBg:   'from-[#ede0c8] to-[#d4b896]',
+    scoreText: 'text-[#5c3d1e]',
+    bar:       'from-[#a07850] to-[#c4a882]',
     barText:   'text-white',
   },
   Rare: {
@@ -76,7 +77,7 @@ const THEME: Record<string, {
 }
 
 const HOVER_GLOW: Record<string, string> = {
-  Core:        'rgba(202,138,4,0.65)',
+  Core:        'rgba(196,168,130,0.65)',
   Rare:        'rgba(217,119,6,0.55)',
   'Very Rare': 'rgba(249,115,22,0.55)',
   Epic:        'rgba(34,197,94,0.55)',
@@ -95,8 +96,9 @@ export default function CoreCard({
   const glow = HOVER_GLOW[rarity] ?? HOVER_GLOW.Core
   const maxPop = Math.max(8, Math.round(20 * scale))
 
-  const rootRef = useRef<HTMLDivElement>(null)
-  const rafRef  = useRef<number | null>(null)
+  const rootRef     = useRef<HTMLDivElement>(null)
+  const rafRef      = useRef<number | null>(null)
+  const shinePosRef = useRef<MouseState>({ relX: 0.5, relY: 0.5, active: false })
 
   // Target values (set instantly on mouse events)
   const target  = useRef({ rotX: 0, rotY: 0, pop: 0, sc: 1 })
@@ -155,11 +157,13 @@ export default function CoreCard({
     target.current.rotX = -(relY - 0.5) * 20   // top:  +10° / bottom: -10°
     target.current.pop  = maxPop
     target.current.sc   = 1.08
+    shinePosRef.current = { relX, relY, active: true }
     startRaf()
   }, [maxPop, startRaf])
 
   const handleMouseLeave = useCallback(() => {
     target.current = { rotX: 0, rotY: 0, pop: 0, sc: 1 }
+    shinePosRef.current.active = false
     startRaf()
   }, [startRaf])
 
@@ -226,6 +230,11 @@ export default function CoreCard({
 
           {/* Rarity bar */}
           <div className={`absolute bottom-0 left-0 right-0 h-[11px] bg-gradient-to-r ${t.bar}`} />
+
+          {/* Rare foil overlay */}
+          {rarity === 'Rare' && (
+            <RareShineCanvas mouseRef={shinePosRef} width={BASE_W} height={BASE_H} />
+          )}
 
         </div>
       </div>
