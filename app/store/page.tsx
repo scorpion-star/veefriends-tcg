@@ -15,6 +15,7 @@ type Card = {
   skill: number
   stamina: number
   total_score: number
+  image_url?: string | null
 }
 
 const RARITY_PRICES: Record<string, number> = {
@@ -199,7 +200,7 @@ export default function StorePage() {
                           skill={card.skill}
                           stamina={card.stamina}
                           totalScore={card.total_score}
-                          imageUrl={getCardArtUrl(card.id)}
+                          imageUrl={getCardArtUrl(card.image_url)}
                           rarity={card.rarity}
                         />
                         <div className="flex flex-col items-center gap-1" style={{ width: 320 * 0.55 }}>

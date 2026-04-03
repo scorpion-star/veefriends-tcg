@@ -17,6 +17,7 @@ type Card = {
   total_score: number
   rarity: 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular'
   rarity_points: number
+  image_url?: string | null
 }
 
 type Deck = {
@@ -373,8 +374,8 @@ export default function DeckBuilder() {
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-lg overflow-hidden shrink-0 border ${RARITY_BORDER[card.rarity]}`}>
-                    {hasCardArt(card.id) ? (
-                      <img src={getCardArtUrl(card.id)} alt={card.name} className="w-full h-full object-cover" />
+                    {hasCardArt(card.image_url) ? (
+                      <img src={getCardArtUrl(card.image_url)} alt={card.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gray-700 flex items-center justify-center text-base">🃏</div>
                     )}
@@ -522,7 +523,7 @@ export default function DeckBuilder() {
                         skill={card.skill}
                         stamina={card.stamina}
                         totalScore={card.total_score}
-                        imageUrl={getCardArtUrl(card.id)}
+                        imageUrl={getCardArtUrl(card.image_url)}
                         rarity={card.rarity}
                       />
                       {/* Remove overlay */}

@@ -984,7 +984,7 @@ function PracticePageInner() {
                   skill={revealHumanCard?.skill ?? 0}
                   stamina={revealHumanCard?.stamina ?? 0}
                   totalScore={revealHumanCard?.total_score ?? 0}
-                  imageUrl={revealHumanCard ? getCardArtUrl(revealHumanCard.id) : null}
+                  imageUrl={revealHumanCard ? getCardArtUrl(revealHumanCard.image_url) : null}
                   rarity={revealHumanCard?.rarity ?? 'Core'}
                 />
                 {gameState.lastRound.attribute !== 'sprint' ? (
@@ -1015,7 +1015,7 @@ function PracticePageInner() {
                   skill={revealCpuCard?.skill ?? 0}
                   stamina={revealCpuCard?.stamina ?? 0}
                   totalScore={revealCpuCard?.total_score ?? 0}
-                  imageUrl={revealCpuCard ? getCardArtUrl(revealCpuCard.id) : null}
+                  imageUrl={revealCpuCard ? getCardArtUrl(revealCpuCard.image_url) : null}
                   rarity={revealCpuCard?.rarity ?? 'Core'}
                 />
                 {gameState.lastRound.attribute !== 'sprint' ? (
@@ -1220,7 +1220,7 @@ function PracticePageInner() {
             skill={myCard.skill}
             stamina={myCard.stamina}
             totalScore={myCard.total_score}
-            imageUrl={getCardArtUrl(myCard.id)}
+            imageUrl={getCardArtUrl(myCard.image_url)}
             rarity={myCard.rarity}
           />
         </div>

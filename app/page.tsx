@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { createClient } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import SparkleTitle from './components/SparkleTitle'
 import CoinIcon from './components/CoinIcon'
 import AvatarUpload from './components/AvatarUpload'
 import UsernameSetup from './components/UsernameSetup'
@@ -12,7 +11,6 @@ import NeonButton from './components/NeonButton'
 import { useSettings } from './components/SettingsContext'
 
 const BG = "min-h-screen relative"
-const OVERLAY = "absolute inset-0 bg-black/30"
 
 export default function Home() {
   const { background } = useSettings()
@@ -97,7 +95,7 @@ export default function Home() {
           <UsernameSetup onComplete={setUsername} />
         )}
 
-        <div className="flex justify-center px-6 pt-2 pb-10">
+        <div className="flex justify-center px-6 pt-0 pb-10 -mt-14 md:-mt-16">
         <div className="relative z-10 text-center w-full flex flex-col items-center">
           <div
             className="relative mx-auto z-10 shrink-0"
@@ -105,7 +103,7 @@ export default function Home() {
           >
             <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} priority />
           </div>
-          <div className="flex flex-col items-center gap-2 -mt-14 relative z-20 mb-3 w-full max-w-md">
+          <div className="flex flex-col items-center gap-2 -mt-[4.75rem] sm:-mt-20 relative z-20 mb-3 w-full max-w-md">
             <AvatarUpload
               userId={user.id}
               avatarUrl={avatarUrl}
@@ -133,35 +131,42 @@ export default function Home() {
             <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/profile')}>
               👤 My Profile
             </NeonButton>
-            <NeonButton variant="ghost" size="md" fullWidth onClick={signOut}>
-              Sign Out
-            </NeonButton>
           </div>
         </div>
         </div>
+
+        <NeonButton
+          variant="ghost"
+          size="sm"
+          className="fixed bottom-5 right-5 z-30 shadow-lg shadow-black/40"
+          onClick={signOut}
+        >
+          Sign Out
+        </NeonButton>
       </div>
     )
   }
 
   // ── Login screen ───────────────────────────────────────────────────────────
   return (
-    <div className={`${BG} text-white`}>
+    <div className={`${BG} text-white min-h-screen overflow-y-auto`}>
       <div className="fixed inset-0 -z-10" style={{ background: background.css }}>
         {background.kenBurns && (
           <div className="w-full h-full bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-ken-burns" />
         )}
       </div>
       <div className="fixed inset-0 bg-black/55 -z-10" />
-      <div className="flex justify-center px-6 py-12">
-      <div className="relative z-10 bg-transparent backdrop-blur p-14 rounded-3xl w-full max-w-[38rem] shadow-2xl border border-gray-800">
-        <div className="text-center mb-14">
-          <div className="mx-auto mb-4 h-[12.5rem] w-auto relative" style={{ width: '27.5rem', height: '12.5rem' }}>
-            <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} />
-          </div>
-          <p className="text-white mt-5 text-lg">Compete & Collect Online</p>
+      <div className="flex flex-col items-center px-6 pt-2 pb-10">
+        {/* 2.5× base logo; short viewports cap height so form + footer stay on screen / scroll */}
+        <div
+          className="relative mx-auto shrink-0 mb-3 -mt-16 sm:-mt-20 w-[min(68.75rem,calc(100vw-3rem))] h-[min(31.25rem,min(28vh,20rem))] sm:h-[min(31.25rem,36vh)] md:max-h-[31.25rem]"
+        >
+          <Image src="/vf-logo.png" alt="VeeFriends logo" fill style={{ objectFit: 'contain' }} priority />
         </div>
+        <p className="text-center text-white text-base sm:text-lg mb-5 drop-shadow-md">Compete & Collect Online</p>
 
-        <div className="space-y-8">
+        <div className="relative z-10 bg-transparent backdrop-blur p-6 sm:p-10 md:p-12 rounded-3xl w-full max-w-[38rem] shadow-2xl border border-gray-800">
+        <div className="space-y-5 sm:space-y-7">
           <input
             type="email"
             placeholder="Email address"
@@ -177,7 +182,7 @@ export default function Home() {
             className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-8 py-5 text-xl focus:outline-none focus:border-blue-500 focus:shadow-md focus:shadow-blue-500/20"
           />
 
-          <div className="flex gap-5 pt-5">
+          <div className="flex gap-4 sm:gap-5 pt-3">
             <NeonButton variant="primary" size="xl" className="flex-1" onClick={signIn} disabled={loading}>
               Sign In
             </NeonButton>
@@ -192,11 +197,11 @@ export default function Home() {
             {authError}
           </p>
         )}
+        </div>
 
-        <p className="text-center text-base text-gray-500 mt-5">
+        <p className="text-center text-base text-gray-300 mt-5 mb-4 max-w-[38rem] px-2 drop-shadow-md">
           First time? Click Sign Up and check your email.
         </p>
-      </div>
       </div>
     </div>
   )

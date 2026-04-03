@@ -200,6 +200,21 @@ export default function JourneyPage() {
 
   return (
     <div className="h-screen overflow-hidden bg-gray-950 text-white flex flex-col">
+      <style>{`
+        @keyframes avatar-shine {
+          0%   { transform: translateX(-180%) skewX(-20deg); }
+          60%  { transform: translateX(180%) skewX(-20deg); }
+          100% { transform: translateX(180%) skewX(-20deg); }
+        }
+        .avatar-shine::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,0.55) 50%, transparent 75%);
+          animation: avatar-shine 2.8s ease-in-out infinite;
+          pointer-events: none;
+        }
+      `}</style>
       {/* Top bar: back, map nav, coins, deck picker */}
       <div className="shrink-0 z-20 relative">
         <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 px-3 py-2 flex items-center gap-2">
@@ -290,7 +305,7 @@ export default function JourneyPage() {
               }`}
               style={{ left: nodeLeft, top: nodeTop }}
             >
-              <div className={`relative rounded-full border-4 overflow-hidden shadow-xl transition ${
+              <div className={`avatar-shine relative rounded-full border-4 overflow-hidden shadow-xl transition ${
                 status === 'completed' ? 'border-green-400 shadow-green-500/40' :
                 status === 'available'
                   ? opponent.is_boss ? 'border-yellow-400 shadow-yellow-500/60' : 'border-white shadow-blue-400/40'
@@ -346,7 +361,7 @@ export default function JourneyPage() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-center mb-4">
-              <div className={`relative rounded-full overflow-hidden border-4 shadow-xl ${
+              <div className={`avatar-shine relative rounded-full overflow-hidden border-4 shadow-xl ${
                 selected.is_boss ? 'border-yellow-400 shadow-yellow-500/40' : 'border-gray-500'
               }`} style={{ width: 96, height: 96 }}>
                 {selected.avatar_url ? (

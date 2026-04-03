@@ -53,7 +53,6 @@ export type Card = {
   total_score: number
   rarity: 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular'
   rarity_points: number
-  /** Legacy DB column; card art URLs come from `getCardArtUrl` + `lib/card-art-manifest.json`. */
   image_url?: string | null
 }
 

@@ -17,6 +17,7 @@ type Card = {
   rarity: string
   rarity_points: number
   quantity: number
+  image_url?: string | null
 }
 
 type PackStatus = {
@@ -230,7 +231,7 @@ export default function Collection() {
                         skill={card.skill ?? 0}
                         stamina={card.stamina ?? 0}
                         totalScore={card.total_score ?? 0}
-                        imageUrl={getCardArtUrl(card.id)}
+                        imageUrl={getCardArtUrl(card.image_url)}
                         rarity={card.rarity}
                       />
                     </div>
@@ -387,7 +388,7 @@ export default function Collection() {
                     skill={card.skill}
                     stamina={card.stamina}
                     totalScore={card.total_score}
-                    imageUrl={getCardArtUrl(card.id)}
+                    imageUrl={getCardArtUrl(card.image_url)}
                     rarity={card.rarity}
                   />
                   {card.quantity > 1 && (
