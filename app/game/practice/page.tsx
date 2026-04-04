@@ -479,8 +479,12 @@ function PracticePageInner() {
             .then(r => r.json())
             .then(d => { if (d.coinsEarned > 0) setCoinsEarned(d.coinsEarned) })
             .catch(() => {})
-        } else if (difficulty >= 7) {
-          fetch('/api/coins/practice-win', { method: 'POST' })
+        } else {
+          fetch('/api/coins/practice-win', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ difficulty }),
+          })
             .then(r => r.json())
             .then(d => { if (d.earned) setCoinsEarned(d.earned) })
             .catch(() => {})

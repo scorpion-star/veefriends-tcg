@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CoreCard from '@/app/components/CoreCard'
@@ -55,6 +55,22 @@ export default function StorePage() {
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState<number | null>(null)
   const [purchaseMsg, setPurchaseMsg] = useState<{ id: number; msg: string; ok: boolean } | null>(null)
+  const [preview, setPreview] = useState<{ card: Card; rect: DOMRect } | null>(null)
+  const [previewVisible, setPreviewVisible] = useState(false)
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function handleCardEnter(card: Card, e: React.MouseEvent<HTMLDivElement>) {
+    if (leaveTimer.current) { clearTimeout(leaveTimer.current); leaveTimer.current = null }
+    const rect = e.currentTarget.getBoundingClientRect()
+    // If switching cards: update rect+card instantly, stay visible — no gap
+    setPreview({ card, rect })
+    setPreviewVisible(true)
+  }
+
+  function handleCardLeave() {
+    setPreviewVisible(false)
+    leaveTimer.current = setTimeout(() => setPreview(null), 250)
+  }
 
   const loadStatus = useCallback(async () => {
     const res = await fetch('/api/coins/status')
@@ -193,16 +209,25 @@ export default function StorePage() {
 
                     return (
                       <div key={card.id} className="flex flex-col items-center gap-2">
-                        <CoreCard
-                          scale={0.55}
-                          name={card.name}
-                          aura={card.aura}
-                          skill={card.skill}
-                          stamina={card.stamina}
-                          totalScore={card.total_score}
-                          imageUrl={getCardArtUrl(card.image_url)}
-                          rarity={card.rarity}
-                        />
+                        <div
+                          onMouseEnter={e => handleCardEnter(card, e)}
+                          onMouseLeave={handleCardLeave}
+                          style={{
+                            opacity: preview?.card.id === card.id ? 0 : 1,
+                            transition: 'opacity 0.15s ease',
+                          }}
+                        >
+                          <CoreCard
+                            scale={0.55}
+                            name={card.name}
+                            aura={card.aura}
+                            skill={card.skill}
+                            stamina={card.stamina}
+                            totalScore={card.total_score}
+                            imageUrl={getCardArtUrl(card.image_url)}
+                            rarity={card.rarity}
+                          />
+                        </div>
                         <div className="flex flex-col items-center gap-1" style={{ width: 320 * 0.55 }}>
                           {msg && (
                             <p className={`text-xs font-semibold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.msg}</p>
@@ -227,6 +252,52 @@ export default function StorePage() {
           })
         )}
       </div></div>
+
+      {/* Animated card preview — flies from grid position to viewport center */}
+      {preview && (() => {
+        const { card, rect } = preview
+        // Centre of the grid card in viewport coords
+        const cx = rect.left + rect.width  / 2
+        const cy = rect.top  + rect.height / 2
+        // Clamp so the full-size card (320×448) never leaves the viewport
+        const vw = typeof window !== 'undefined' ? window.innerWidth  : 1280
+        const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+        const clampedCx = Math.min(Math.max(cx, 170), vw - 170)
+        const clampedCy = Math.min(Math.max(cy, 234), vh - 234)
+        // Position the overlay so its centre aligns with the (clamped) card centre
+        const left = clampedCx - 160   // 160 = 320/2
+        const top  = clampedCy - 224   // 224 = 448/2
+
+        return (
+          <div
+            style={{
+              position:        'fixed',
+              top:             top,
+              left:            left,
+              pointerEvents:   'none',
+              zIndex:          9999,
+              transformOrigin: 'center center',
+              transform:       previewVisible ? 'scale(1)' : 'scale(0.55)',
+              opacity:         previewVisible ? 1 : 0,
+              transition:      previewVisible
+                ? 'transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.12s ease'
+                : 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.18s ease',
+              filter:          previewVisible ? 'drop-shadow(0 24px 48px rgba(0,0,0,0.7))' : 'none',
+            }}
+          >
+            <CoreCard
+              scale={1}
+              name={card.name}
+              aura={card.aura}
+              skill={card.skill}
+              stamina={card.stamina}
+              totalScore={card.total_score}
+              imageUrl={getCardArtUrl(card.image_url)}
+              rarity={card.rarity}
+            />
+          </div>
+        )
+      })()}
     </div>
   )
 }

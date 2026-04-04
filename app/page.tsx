@@ -116,19 +116,40 @@ export default function Home() {
             </p>
           </div>
           <div className="space-y-4 w-full max-w-md -mt-3">
-            <NeonButton variant="primary" size="xl" fullWidth onClick={() => router.push('/play')}>
-              ⚔ Play Now
+            <NeonButton variant="metal" size="xl" fullWidth onClick={() => router.push('/play')}>
+              <img src="/swords.webp" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              Play Now
             </NeonButton>
-            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/deck-builder')}>
-              🃏 Deck Builder
+            <NeonButton variant="metal" size="lg" fullWidth onClick={() => router.push('/deck-builder')}>
+              <span className="relative inline-flex items-center justify-center" style={{ width: 28, height: 28 }}>
+                {[-20, -10, 0, 10, 20].map((deg, i) => (
+                  <img
+                    key={i}
+                    src="/card-back.png"
+                    alt=""
+                    style={{
+                      position: 'absolute',
+                      width: 18,
+                      height: 26,
+                      borderRadius: 2,
+                      transform: `rotate(${deg}deg)`,
+                      transformOrigin: 'bottom center',
+                      zIndex: i,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                    }}
+                  />
+                ))}
+              </span>
+              Deck Builder
             </NeonButton>
-            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/collection')}>
-              📦 My Collection
+            <NeonButton variant="metal" size="lg" fullWidth onClick={() => router.push('/collection')}>
+              <img src="/vf-tcg-box.webp" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              My Collection
             </NeonButton>
-            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/store')}>
+            <NeonButton variant="metal" size="lg" fullWidth onClick={() => router.push('/store')}>
               <CoinIcon size={18} /> Store
             </NeonButton>
-            <NeonButton variant="secondary" size="lg" fullWidth onClick={() => router.push('/profile')}>
+            <NeonButton variant="metal" size="lg" fullWidth onClick={() => router.push('/profile')}>
               👤 My Profile
             </NeonButton>
           </div>

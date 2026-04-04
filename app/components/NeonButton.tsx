@@ -2,7 +2,7 @@
 
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
-export type NeonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'success' | 'warning'
+export type NeonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'success' | 'warning' | 'metal'
 export type NeonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 interface NeonButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

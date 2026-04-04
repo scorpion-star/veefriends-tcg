@@ -264,6 +264,36 @@ body {
 .neon-btn--warning   { --nb-color: #fbbf24; --nb-glow: rgba(251,191,36,0.5); }   /* amber-400 */
 .neon-btn--ghost     { --nb-color: rgba(156,163,175,0.75); --nb-glow: rgba(156,163,175,0.2); }
 
+/* Shiny silver metal */
+.neon-btn--metal {
+  --nb-color: #e2e8f0;
+  --nb-glow: rgba(226,232,240,0.55);
+  background: linear-gradient(180deg,
+    #f8fafc 0%,
+    #e2e8f0 18%,
+    #94a3b8 52%,
+    #64748b 80%,
+    #475569 100%
+  );
+  border-color: #cbd5e1;
+  color: #0f172a;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55), 0 -1px 1px rgba(0,0,0,0.25);
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+.neon-btn--metal:hover:not(:disabled) {
+  background: linear-gradient(180deg,
+    #ffffff 0%,
+    #f1f5f9 18%,
+    #cbd5e1 52%,
+    #94a3b8 80%,
+    #64748b 100%
+  );
+  color: #0f172a;
+  border-color: #f59e0b;
+  filter: drop-shadow(0 0 6px rgba(245,158,11,0.5)) drop-shadow(0 0 14px rgba(245,158,11,0.3));
+}
+
 /* Sizes */
 .neon-btn--xl  { padding: 1.1rem 2.5rem;  font-size: 1.125rem; }
 .neon-btn--lg  { padding: 0.875rem 2rem;  font-size: 1rem; }
