@@ -85,22 +85,32 @@ export default function DeckBuilder() {
       if (!user) { router.push('/'); return }
       setUserId(user.id)
 
-      // Load collection
-      const { data: inv } = await supabase
-        .from('user_inventory')
-        .select('card_id')
-        .eq('user_id', user.id)
-        .limit(2500)
+      // Load collection — paginate to bypass PostgREST's 1000-row max_rows cap
+      const inv: { card_id: number }[] = []
+      for (let offset = 0; offset < 2500; offset += 1000) {
+        const { data } = await supabase
+          .from('user_inventory')
+          .select('card_id')
+          .eq('user_id', user.id)
+          .range(offset, offset + 999)
+        if (!data || data.length === 0) break
+        inv.push(...data)
+        if (data.length < 1000) break
+      }
 
-      if (inv && inv.length > 0) {
+      if (inv.length > 0) {
         const cardIds = inv.map((i: { card_id: number }) => i.card_id)
-        const { data: cards } = await supabase
-          .from('cards')
-          .select('*')
-          .in('id', cardIds)
-          .order('name')
-          .limit(2500)
-        if (cards) setCollection(cards as Card[])
+        const allCards: Card[] = []
+        for (let offset = 0; offset < cardIds.length; offset += 1000) {
+          const batch = cardIds.slice(offset, offset + 1000)
+          const { data } = await supabase
+            .from('cards')
+            .select('*')
+            .in('id', batch)
+            .order('name')
+          if (data) allCards.push(...(data as Card[]))
+        }
+        if (allCards.length > 0) setCollection(allCards)
       }
 
       // Load saved decks

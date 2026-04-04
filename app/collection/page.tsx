@@ -92,22 +92,34 @@ export default function Collection() {
 
   // ── Data loading ──────────────────────────────────────────────────────────
   const loadCollection = useCallback(async (userId: string) => {
-    const { data: inventoryData } = await supabase
-      .from('user_inventory')
-      .select('quantity, card_id')
-      .eq('user_id', userId)
-      .limit(2500)
+    // Paginate in 1000-row batches to work around PostgREST's server-side max_rows cap
+    const inventoryData: { quantity: number; card_id: number }[] = []
+    for (let offset = 0; offset < 2500; offset += 1000) {
+      const { data } = await supabase
+        .from('user_inventory')
+        .select('quantity, card_id')
+        .eq('user_id', userId)
+        .range(offset, offset + 999)
+      if (!data || data.length === 0) break
+      inventoryData.push(...data)
+      if (data.length < 1000) break
+    }
 
-    if (!inventoryData || inventoryData.length === 0) { setCards([]); return }
+    if (inventoryData.length === 0) { setCards([]); return }
 
     const cardIds = inventoryData.map(item => item.card_id)
-    const { data: cardsData } = await supabase
-      .from('cards')
-      .select('*')
-      .in('id', cardIds)
-      .limit(2500)
+    // cards table also needs pagination since cardIds can exceed 1000
+    const cardsData: ReturnType<typeof Object.assign>[] = []
+    for (let offset = 0; offset < cardIds.length; offset += 1000) {
+      const batch = cardIds.slice(offset, offset + 1000)
+      const { data } = await supabase
+        .from('cards')
+        .select('*')
+        .in('id', batch)
+      if (data) cardsData.push(...data)
+    }
 
-    if (cardsData) {
+    if (cardsData.length > 0) {
       const qtyMap: Record<number, number> = {}
       inventoryData.forEach(item => { qtyMap[item.card_id] = item.quantity })
       const formatted = cardsData.map(card => ({ ...card, quantity: qtyMap[card.id] ?? 1 }))
