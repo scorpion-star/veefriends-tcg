@@ -96,7 +96,7 @@ export default function Collection() {
       .from('user_inventory')
       .select('quantity, card_id')
       .eq('user_id', userId)
-      .limit(5000)
+      .limit(2500)
 
     if (!inventoryData || inventoryData.length === 0) { setCards([]); return }
 
@@ -105,7 +105,7 @@ export default function Collection() {
       .from('cards')
       .select('*')
       .in('id', cardIds)
-      .limit(5000)
+      .limit(2500)
 
     if (cardsData) {
       const qtyMap: Record<number, number> = {}

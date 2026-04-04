@@ -3,7 +3,7 @@
 // CoreCard — unified card design across the entire app.
 // `scale` controls display size. Outer div takes (320*scale × 448*scale) px in layout.
 
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import RareShineCanvas, { type MouseState } from './RareShineCanvas'
 
 const BASE_W = 320
@@ -235,6 +235,15 @@ export default function CoreCard({
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }, [])
 
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div
       ref={rootRef}
@@ -298,7 +307,7 @@ export default function CoreCard({
           <div className={`absolute bottom-0 left-0 right-0 h-[11px] bg-gradient-to-r ${t.bar}`} />
 
           {/* Holofoil overlay — Rare and all ultra-rare types */}
-          {['Rare', 'Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald'].includes(rarity) && (
+          {['Rare', 'Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald'].includes(rarity) && inView && (
             <RareShineCanvas width={BASE_W} height={BASE_H} />
           )}
 

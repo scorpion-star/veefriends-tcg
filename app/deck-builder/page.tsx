@@ -90,6 +90,7 @@ export default function DeckBuilder() {
         .from('user_inventory')
         .select('card_id')
         .eq('user_id', user.id)
+        .limit(2500)
 
       if (inv && inv.length > 0) {
         const cardIds = inv.map((i: { card_id: number }) => i.card_id)
@@ -98,6 +99,7 @@ export default function DeckBuilder() {
           .select('*')
           .in('id', cardIds)
           .order('name')
+          .limit(2500)
         if (cards) setCollection(cards as Card[])
       }
 
