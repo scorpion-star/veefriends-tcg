@@ -79,7 +79,7 @@ export const RARITY_MULTIPLIER: Record<string, number> = {
 }
 
 export function getSprintScore(card: Card): number {
-  return Math.round(card.total_score * (RARITY_MULTIPLIER[normalizeRarity(card.rarity)] ?? 1))
+  return card.total_score
 }
 
 export function checkWinner(state: GameState): PlayerKey | null {
