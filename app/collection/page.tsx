@@ -107,11 +107,12 @@ export default function Collection() {
       inventoryData.forEach(item => { qtyMap[item.card_id] = item.quantity })
       const formatted = cardsData.map(card => ({ ...card, quantity: qtyMap[card.id] ?? 1 }))
       formatted.sort((a, b) => {
-        const order = ['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core']
-        const tierDiff = order.indexOf(normalizeRarity(a.rarity)) - order.indexOf(normalizeRarity(b.rarity))
+        // Lava sits just after Spectacular (as its own sub-tier) before Epic
+        const order = ['Spectacular', 'Lava', 'Epic', 'Very Rare', 'Rare', 'Core']
+        const tierA = a.rarity === 'Lava' ? 'Lava' : normalizeRarity(a.rarity)
+        const tierB = b.rarity === 'Lava' ? 'Lava' : normalizeRarity(b.rarity)
+        const tierDiff = order.indexOf(tierA) - order.indexOf(tierB)
         if (tierDiff !== 0) return tierDiff
-        // Within same tier, sort by actual rarity string then name so every
-        // variant type (Diamond, Lava, etc.) clusters consistently
         return a.rarity.localeCompare(b.rarity) || a.name.localeCompare(b.name)
       })
       setCards(formatted)
@@ -378,7 +379,10 @@ export default function Collection() {
           <>
             <div className="flex gap-3 mb-6 flex-wrap">
               {(['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core'] as const).map(rarity => {
-                const count = cards.filter(c => normalizeRarity(c.rarity) === rarity).reduce((s, c) => s + c.quantity, 0)
+                // Spectacular count excludes Lava (shown as its own sub-badge)
+                const count = cards
+                  .filter(c => normalizeRarity(c.rarity) === rarity && c.rarity !== 'Lava')
+                  .reduce((s, c) => s + c.quantity, 0)
                 if (count === 0) return null
                 const style = RARITY_STYLE[rarity]
                 return (
@@ -387,6 +391,16 @@ export default function Collection() {
                   </span>
                 )
               })}
+              {(() => {
+                const count = cards.filter(c => c.rarity === 'Lava').reduce((s, c) => s + c.quantity, 0)
+                if (count === 0) return null
+                const style = RARITY_STYLE['Lava']
+                return (
+                  <span key="Lava" className={`border ${style.border} text-xs px-3 py-1 rounded-full ${style.badge}`}>
+                    Lava: {count}
+                  </span>
+                )
+              })()}
             </div>
 
             <div className="flex flex-wrap gap-4">
