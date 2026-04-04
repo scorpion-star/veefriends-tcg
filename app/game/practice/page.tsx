@@ -402,15 +402,23 @@ function PracticePageInner() {
 
       setUserEmail(user.email ?? '')
 
-      const [{ data: decks }, { data: cards }, { data: profile }] = await Promise.all([
+      const [{ data: decks }, { data: profile }] = await Promise.all([
         supabase.from('decks').select('id, name, card_ids').eq('user_id', user.id),
-        supabase.from('cards').select('*'),
         supabase.from('user_profiles').select('avatar_url, username').eq('user_id', user.id).single(),
       ])
 
+      // Paginate cards to bypass PostgREST 1000-row cap
+      const allCardsData: Card[] = []
+      for (let offset = 0; offset < 2500; offset += 1000) {
+        const { data } = await supabase.from('cards').select('*').range(offset, offset + 999)
+        if (!data || data.length === 0) break
+        allCardsData.push(...(data as Card[]))
+        if (data.length < 1000) break
+      }
+
       const validDecks = (decks as SavedDeck[] ?? []).filter(d => d.card_ids.length === 20)
       if (decks) setUserDecks(validDecks)
-      if (cards) setAllCards(cards as Card[])
+      if (allCardsData.length > 0) setAllCards(allCardsData)
       if (profile?.avatar_url) setAvatarUrl(profile.avatar_url)
       if (profile?.username) setUsername(profile.username)
 
@@ -668,14 +676,16 @@ function PracticePageInner() {
     })
   }
 
-  function startGame() {
+  async function startGame() {
     const deck = userDecks.find(d => d.id === selectedDeckId)
     if (!deck || allCards.length === 0) return
 
     const cpuCardIds = buildCpuDeck(allCards, difficulty)
-    const allNeededIds = new Set([...deck.card_ids, ...cpuCardIds])
+    const allNeededIds = [...new Set([...deck.card_ids, ...cpuCardIds])]
+    // Fetch exactly the cards needed — never hits the row cap
+    const { data: neededCards } = await supabase.from('cards').select('*').in('id', allNeededIds)
     const map: Record<number, Card> = {}
-    allCards.forEach(c => { if (allNeededIds.has(c.id)) map[c.id] = c })
+    ;(neededCards as Card[] ?? []).forEach(c => { map[c.id] = c })
     setCardMap(map)
 
     const humanDeck = shuffle([...deck.card_ids])
