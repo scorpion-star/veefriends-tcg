@@ -96,11 +96,16 @@ export default function Collection() {
       .from('user_inventory')
       .select('quantity, card_id')
       .eq('user_id', userId)
+      .limit(5000)
 
     if (!inventoryData || inventoryData.length === 0) { setCards([]); return }
 
     const cardIds = inventoryData.map(item => item.card_id)
-    const { data: cardsData } = await supabase.from('cards').select('*').in('id', cardIds)
+    const { data: cardsData } = await supabase
+      .from('cards')
+      .select('*')
+      .in('id', cardIds)
+      .limit(5000)
 
     if (cardsData) {
       const qtyMap: Record<number, number> = {}
