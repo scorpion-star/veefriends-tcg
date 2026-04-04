@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
+import { normalizeRarity } from '@/lib/game-types'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CoreCard from '../components/CoreCard'
@@ -106,8 +107,8 @@ export default function Collection() {
       inventoryData.forEach(item => { qtyMap[item.card_id] = item.quantity })
       const formatted = cardsData.map(card => ({ ...card, quantity: qtyMap[card.id] ?? 1 }))
       formatted.sort((a, b) => {
-        const order = ['Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald', 'Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core']
-        return order.indexOf(a.rarity) - order.indexOf(b.rarity)
+        const order = ['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core']
+        return order.indexOf(normalizeRarity(a.rarity)) - order.indexOf(normalizeRarity(b.rarity))
       })
       setCards(formatted)
     }
@@ -372,8 +373,8 @@ export default function Collection() {
         ) : (
           <>
             <div className="flex gap-3 mb-6 flex-wrap">
-              {(['Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald', 'Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core'] as const).map(rarity => {
-                const count = cards.filter(c => c.rarity === rarity).reduce((s, c) => s + c.quantity, 0)
+              {(['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core'] as const).map(rarity => {
+                const count = cards.filter(c => normalizeRarity(c.rarity) === rarity).reduce((s, c) => s + c.quantity, 0)
                 if (count === 0) return null
                 const style = RARITY_STYLE[rarity]
                 return (

@@ -62,6 +62,13 @@ export type GameAction =
   | { type: 'accept' }
   | { type: 'decline'; attribute: Attribute | null }  // attribute = counter-offer; null = 3rd decline (force faceoff)
 
+// The 6 ultra-rare variants are sub-types of Spectacular for all game logic
+export const SPECTACULAR_VARIANTS = new Set(['Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald'])
+
+export function normalizeRarity(rarity: string): string {
+  return SPECTACULAR_VARIANTS.has(rarity) ? 'Spectacular' : rarity
+}
+
 // Rarity multipliers for Sprint Score
 export const RARITY_MULTIPLIER: Record<string, number> = {
   Core: 1,
@@ -69,16 +76,10 @@ export const RARITY_MULTIPLIER: Record<string, number> = {
   'Very Rare': 1.5,
   Epic: 2,
   Spectacular: 4,
-  Diamond: 5,
-  Lava: 5,
-  Holo: 5,
-  Gold: 5,
-  Bubblegum: 5,
-  Emerald: 5,
 }
 
 export function getSprintScore(card: Card): number {
-  return Math.round(card.total_score * RARITY_MULTIPLIER[card.rarity])
+  return Math.round(card.total_score * (RARITY_MULTIPLIER[normalizeRarity(card.rarity)] ?? 1))
 }
 
 export function checkWinner(state: GameState): PlayerKey | null {

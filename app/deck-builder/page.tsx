@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CoreCard from '../components/CoreCard'
 import { getCardArtUrl, hasCardArt } from '@/lib/card-art'
+import { normalizeRarity } from '@/lib/game-types'
 import NeonButton from '../components/NeonButton'
 
 type Card = {
@@ -15,7 +16,7 @@ type Card = {
   skill: number
   stamina: number
   total_score: number
-  rarity: 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular'
+  rarity: 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular' | 'Diamond' | 'Lava' | 'Holo' | 'Gold' | 'Bubblegum' | 'Emerald'
   rarity_points: number
   image_url?: string | null
 }
@@ -34,6 +35,12 @@ const RARITY_BORDER: Record<string, string> = {
   'Very Rare': 'border-purple-500',
   Epic: 'border-orange-500',
   Spectacular: 'border-yellow-400',
+  Diamond: 'border-cyan-300',
+  Lava: 'border-red-500',
+  Holo: 'border-violet-400',
+  Gold: 'border-yellow-300',
+  Bubblegum: 'border-pink-400',
+  Emerald: 'border-emerald-400',
 }
 
 const RARITY_BADGE: Record<string, string> = {
@@ -42,6 +49,12 @@ const RARITY_BADGE: Record<string, string> = {
   'Very Rare': 'bg-purple-800 text-purple-300',
   Epic: 'bg-orange-800 text-orange-300',
   Spectacular: 'bg-yellow-800 text-yellow-300',
+  Diamond: 'bg-cyan-800 text-cyan-200',
+  Lava: 'bg-red-900 text-red-300',
+  Holo: 'bg-violet-800 text-violet-200',
+  Gold: 'bg-yellow-700 text-yellow-200',
+  Bubblegum: 'bg-pink-800 text-pink-200',
+  Emerald: 'bg-emerald-800 text-emerald-200',
 }
 
 const MAX_CARDS = 20
@@ -122,7 +135,7 @@ export default function DeckBuilder() {
     const max = maxScore !== '' ? Number(maxScore) : null
     const filtered = collection.filter(c => {
       const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase())
-      const matchesRarity = rarityFilter === 'All' || c.rarity === rarityFilter
+      const matchesRarity = rarityFilter === 'All' || normalizeRarity(c.rarity) === rarityFilter
       const matchesMin = min === null || c.total_score >= min
       const matchesMax = max === null || c.total_score <= max
       return matchesSearch && matchesRarity && matchesMin && matchesMax
@@ -550,7 +563,7 @@ export default function DeckBuilder() {
                 {/* Rarity breakdown */}
                 <div className="mt-6 flex gap-3 flex-wrap">
                   {(['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular'] as const).map(rarity => {
-                    const count = deckCards.filter(c => c.rarity === rarity).length
+                    const count = deckCards.filter(c => normalizeRarity(c.rarity) === rarity).length
                     if (count === 0) return null
                     return (
                       <div

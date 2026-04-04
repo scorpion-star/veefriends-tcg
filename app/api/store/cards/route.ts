@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createAuthClient, createAdminClient } from '@/lib/supabase-server'
 
 const CARDS_PER_RARITY = 5
-const RARITIES = ['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular', 'Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald']
+const RARITIES = ['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular']
+const SPECTACULAR_VARIANTS = new Set(['Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald'])
 const REFRESH_HOURS = 24
 
 function shuffle<T>(arr: T[]): T[] {
@@ -43,7 +44,9 @@ export async function GET() {
 
     cardIds = {}
     for (const rarity of RARITIES) {
-      const pool = allCards.filter(c => c.rarity === rarity)
+      const pool = rarity === 'Spectacular'
+        ? allCards.filter(c => c.rarity === 'Spectacular' || SPECTACULAR_VARIANTS.has(c.rarity))
+        : allCards.filter(c => c.rarity === rarity)
       cardIds[rarity] = shuffle(pool).slice(0, CARDS_PER_RARITY).map(c => c.id)
     }
 
@@ -82,8 +85,9 @@ export async function GET() {
 
   // Sort by rarity order then name
   const rarityOrder = Object.fromEntries(RARITIES.map((r, i) => [r, i]))
+  const normalizeR = (r: string) => (SPECTACULAR_VARIANTS.has(r) ? 'Spectacular' : r)
   const sorted = (cards ?? []).sort((a, b) =>
-    rarityOrder[a.rarity] - rarityOrder[b.rarity] || a.name.localeCompare(b.name)
+    rarityOrder[normalizeR(a.rarity)] - rarityOrder[normalizeR(b.rarity)] || a.name.localeCompare(b.name)
   )
 
   const refreshedAt = needsRefresh ? new Date().toISOString() : rotation!.refreshed_at
