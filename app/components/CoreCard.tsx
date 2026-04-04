@@ -74,6 +74,66 @@ const THEME: Record<string, {
     bar:       'from-purple-900 to-indigo-800',
     barText:   'text-blue-100',
   },
+  Diamond: {
+    border:    'border-cyan-200',
+    bg:        'from-slate-100 via-cyan-100 to-sky-200',
+    banner:    'from-sky-300 to-cyan-200',
+    frame:     'border-cyan-100',
+    scoreBg:   'from-white to-cyan-200',
+    scoreText: 'text-sky-900',
+    bar:       'from-sky-300 to-cyan-200',
+    barText:   'text-sky-900',
+  },
+  Lava: {
+    border:    'border-red-500',
+    bg:        'from-red-700 via-orange-600 to-yellow-500',
+    banner:    'from-red-900 to-red-700',
+    frame:     'border-orange-400',
+    scoreBg:   'from-orange-300 to-yellow-400',
+    scoreText: 'text-red-950',
+    bar:       'from-yellow-500 to-red-700',
+    barText:   'text-yellow-100',
+  },
+  Holo: {
+    border:    'border-violet-400',
+    bg:        'from-violet-600 via-fuchsia-600 to-pink-600',
+    banner:    'from-violet-800 to-fuchsia-700',
+    frame:     'border-fuchsia-300',
+    scoreBg:   'from-fuchsia-300 to-pink-400',
+    scoreText: 'text-violet-950',
+    bar:       'from-pink-600 to-violet-700',
+    barText:   'text-pink-100',
+  },
+  Gold: {
+    border:    'border-yellow-400',
+    bg:        'from-yellow-400 via-amber-300 to-yellow-500',
+    banner:    'from-yellow-700 to-amber-500',
+    frame:     'border-yellow-200',
+    scoreBg:   'from-yellow-200 to-amber-300',
+    scoreText: 'text-yellow-950',
+    bar:       'from-amber-600 to-yellow-400',
+    barText:   'text-yellow-900',
+  },
+  Bubblegum: {
+    border:    'border-pink-400',
+    bg:        'from-pink-400 via-rose-400 to-fuchsia-500',
+    banner:    'from-pink-700 to-rose-500',
+    frame:     'border-pink-200',
+    scoreBg:   'from-pink-200 to-rose-300',
+    scoreText: 'text-pink-950',
+    bar:       'from-fuchsia-600 to-pink-500',
+    barText:   'text-pink-100',
+  },
+  Emerald: {
+    border:    'border-emerald-400',
+    bg:        'from-emerald-600 via-teal-700 to-emerald-900',
+    banner:    'from-emerald-900 to-teal-700',
+    frame:     'border-emerald-300',
+    scoreBg:   'from-emerald-300 to-teal-400',
+    scoreText: 'text-emerald-950',
+    bar:       'from-emerald-900 to-teal-700',
+    barText:   'text-emerald-100',
+  },
 }
 
 const HOVER_GLOW: Record<string, string> = {
@@ -82,6 +142,12 @@ const HOVER_GLOW: Record<string, string> = {
   'Very Rare': 'rgba(249,115,22,0.55)',
   Epic:        'rgba(34,197,94,0.55)',
   Spectacular: 'rgba(99,102,241,0.55)',
+  Diamond:     'rgba(103,232,249,0.65)',
+  Lava:        'rgba(239,68,68,0.65)',
+  Holo:        'rgba(192,132,252,0.65)',
+  Gold:        'rgba(250,204,21,0.65)',
+  Bubblegum:   'rgba(244,114,182,0.65)',
+  Emerald:     'rgba(52,211,153,0.65)',
 }
 
 function lerp(a: number, b: number, t: number) {
@@ -231,8 +297,8 @@ export default function CoreCard({
           {/* Rarity bar */}
           <div className={`absolute bottom-0 left-0 right-0 h-[11px] bg-gradient-to-r ${t.bar}`} />
 
-          {/* Rare foil overlay */}
-          {rarity === 'Rare' && (
+          {/* Holofoil overlay — Rare and all ultra-rare types */}
+          {['Rare', 'Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald'].includes(rarity) && (
             <RareShineCanvas width={BASE_W} height={BASE_H} />
           )}
 

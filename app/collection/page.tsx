@@ -37,11 +37,17 @@ type AnimState = {
 }
 
 const RARITY_STYLE: Record<string, { border: string; badge: string; glow: string; glowColor: string }> = {
-  Core:        { border: 'border-gray-500',   badge: 'bg-gray-700 text-gray-200',     glow: '',                         glowColor: '' },
-  Rare:        { border: 'border-green-500',  badge: 'bg-green-700 text-green-100',   glow: 'shadow-green-500/50',      glowColor: 'rgba(34,197,94,0.6)' },
-  'Very Rare': { border: 'border-purple-500', badge: 'bg-purple-700 text-purple-100', glow: 'shadow-purple-500/50',     glowColor: 'rgba(168,85,247,0.6)' },
-  Epic:        { border: 'border-orange-500', badge: 'bg-orange-700 text-orange-100', glow: 'shadow-orange-500/50',     glowColor: 'rgba(249,115,22,0.6)' },
-  Spectacular: { border: 'border-yellow-400', badge: 'bg-yellow-600 text-yellow-100', glow: 'shadow-yellow-400/60',     glowColor: 'rgba(250,204,21,0.8)' },
+  Core:        { border: 'border-gray-500',    badge: 'bg-gray-700 text-gray-200',      glow: '',                          glowColor: '' },
+  Rare:        { border: 'border-green-500',   badge: 'bg-green-700 text-green-100',    glow: 'shadow-green-500/50',       glowColor: 'rgba(34,197,94,0.6)' },
+  'Very Rare': { border: 'border-purple-500',  badge: 'bg-purple-700 text-purple-100',  glow: 'shadow-purple-500/50',      glowColor: 'rgba(168,85,247,0.6)' },
+  Epic:        { border: 'border-orange-500',  badge: 'bg-orange-700 text-orange-100',  glow: 'shadow-orange-500/50',      glowColor: 'rgba(249,115,22,0.6)' },
+  Spectacular: { border: 'border-yellow-400',  badge: 'bg-yellow-600 text-yellow-100',  glow: 'shadow-yellow-400/60',      glowColor: 'rgba(250,204,21,0.8)' },
+  Diamond:     { border: 'border-cyan-300',    badge: 'bg-cyan-800 text-cyan-100',      glow: 'shadow-cyan-300/70',        glowColor: 'rgba(103,232,249,0.8)' },
+  Lava:        { border: 'border-red-500',     badge: 'bg-red-800 text-red-100',        glow: 'shadow-red-500/70',         glowColor: 'rgba(239,68,68,0.8)' },
+  Holo:        { border: 'border-violet-400',  badge: 'bg-violet-800 text-violet-100',  glow: 'shadow-violet-400/70',      glowColor: 'rgba(192,132,252,0.8)' },
+  Gold:        { border: 'border-yellow-300',  badge: 'bg-yellow-700 text-yellow-100',  glow: 'shadow-yellow-300/70',      glowColor: 'rgba(253,224,71,0.8)' },
+  Bubblegum:   { border: 'border-pink-400',    badge: 'bg-pink-700 text-pink-100',      glow: 'shadow-pink-400/70',        glowColor: 'rgba(244,114,182,0.8)' },
+  Emerald:     { border: 'border-emerald-400', badge: 'bg-emerald-800 text-emerald-100',glow: 'shadow-emerald-400/70',     glowColor: 'rgba(52,211,153,0.8)' },
 }
 
 function formatCountdown(ms: number): string {
@@ -100,7 +106,7 @@ export default function Collection() {
       inventoryData.forEach(item => { qtyMap[item.card_id] = item.quantity })
       const formatted = cardsData.map(card => ({ ...card, quantity: qtyMap[card.id] ?? 1 }))
       formatted.sort((a, b) => {
-        const order = ['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core']
+        const order = ['Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald', 'Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core']
         return order.indexOf(a.rarity) - order.indexOf(b.rarity)
       })
       setCards(formatted)
@@ -366,7 +372,7 @@ export default function Collection() {
         ) : (
           <>
             <div className="flex gap-3 mb-6 flex-wrap">
-              {(['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core'] as const).map(rarity => {
+              {(['Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald', 'Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core'] as const).map(rarity => {
                 const count = cards.filter(c => c.rarity === rarity).reduce((s, c) => s + c.quantity, 0)
                 if (count === 0) return null
                 const style = RARITY_STYLE[rarity]

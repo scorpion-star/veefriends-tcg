@@ -24,16 +24,28 @@ const RARITY_PRICES: Record<string, number> = {
   'Very Rare': 300,
   Epic:        600,
   Spectacular: 1200,
+  Diamond:     2500,
+  Lava:        2500,
+  Holo:        2500,
+  Gold:        2500,
+  Bubblegum:   2500,
+  Emerald:     2500,
 }
 
-const RARITY_ORDER = ['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular']
+const RARITY_ORDER = ['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular', 'Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald']
 
 const RARITY_STYLE: Record<string, { label: string; card: string; badge: string }> = {
-  Core:         { label: 'text-gray-300',   card: 'border-gray-600',  badge: 'bg-gray-800 text-gray-300' },
-  Rare:         { label: 'text-amber-400',  card: 'border-amber-600', badge: 'bg-amber-900/50 text-amber-300' },
-  'Very Rare':  { label: 'text-orange-400', card: 'border-orange-600',badge: 'bg-orange-900/50 text-orange-300' },
-  Epic:         { label: 'text-green-400',  card: 'border-green-600', badge: 'bg-green-900/50 text-green-300' },
-  Spectacular:  { label: 'text-blue-400',   card: 'border-blue-500',  badge: 'bg-blue-900/50 text-blue-300' },
+  Core:        { label: 'text-gray-300',    card: 'border-gray-600',    badge: 'bg-gray-800 text-gray-300' },
+  Rare:        { label: 'text-amber-400',   card: 'border-amber-600',   badge: 'bg-amber-900/50 text-amber-300' },
+  'Very Rare': { label: 'text-orange-400',  card: 'border-orange-600',  badge: 'bg-orange-900/50 text-orange-300' },
+  Epic:        { label: 'text-green-400',   card: 'border-green-600',   badge: 'bg-green-900/50 text-green-300' },
+  Spectacular: { label: 'text-blue-400',    card: 'border-blue-500',    badge: 'bg-blue-900/50 text-blue-300' },
+  Diamond:     { label: 'text-cyan-200',    card: 'border-cyan-300',    badge: 'bg-cyan-900/50 text-cyan-200' },
+  Lava:        { label: 'text-red-400',     card: 'border-red-500',     badge: 'bg-red-900/50 text-red-300' },
+  Holo:        { label: 'text-violet-400',  card: 'border-violet-500',  badge: 'bg-violet-900/50 text-violet-300' },
+  Gold:        { label: 'text-yellow-300',  card: 'border-yellow-400',  badge: 'bg-yellow-900/50 text-yellow-200' },
+  Bubblegum:   { label: 'text-pink-400',    card: 'border-pink-400',    badge: 'bg-pink-900/50 text-pink-300' },
+  Emerald:     { label: 'text-emerald-400', card: 'border-emerald-500', badge: 'bg-emerald-900/50 text-emerald-300' },
 }
 
 function hoursUntilRefresh(refreshedAt: string): number {

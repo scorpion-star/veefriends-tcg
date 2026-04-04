@@ -8,6 +8,12 @@ const RARITY_WEIGHTS: Record<string, number> = {
   'Very Rare': 12,
   Epic: 6,
   Spectacular: 2,
+  Diamond: 1,
+  Lava: 1,
+  Holo: 1,
+  Gold: 1,
+  Bubblegum: 1,
+  Emerald: 1,
 }
 
 type Card = { id: number; rarity: string; name: string }

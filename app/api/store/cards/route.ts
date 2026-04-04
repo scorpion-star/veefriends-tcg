@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAuthClient, createAdminClient } from '@/lib/supabase-server'
 
 const CARDS_PER_RARITY = 5
-const RARITIES = ['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular']
+const RARITIES = ['Core', 'Rare', 'Very Rare', 'Epic', 'Spectacular', 'Diamond', 'Lava', 'Holo', 'Gold', 'Bubblegum', 'Emerald']
 const REFRESH_HOURS = 24
 
 function shuffle<T>(arr: T[]): T[] {

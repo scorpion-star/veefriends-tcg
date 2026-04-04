@@ -51,7 +51,7 @@ export type Card = {
   skill: number
   stamina: number
   total_score: number
-  rarity: 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular'
+  rarity: 'Core' | 'Rare' | 'Very Rare' | 'Epic' | 'Spectacular' | 'Diamond' | 'Lava' | 'Holo' | 'Gold' | 'Bubblegum' | 'Emerald'
   rarity_points: number
   image_url?: string | null
 }
@@ -69,6 +69,12 @@ export const RARITY_MULTIPLIER: Record<string, number> = {
   'Very Rare': 1.5,
   Epic: 2,
   Spectacular: 4,
+  Diamond: 5,
+  Lava: 5,
+  Holo: 5,
+  Gold: 5,
+  Bubblegum: 5,
+  Emerald: 5,
 }
 
 export function getSprintScore(card: Card): number {

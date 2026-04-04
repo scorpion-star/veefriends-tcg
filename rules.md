@@ -15,12 +15,18 @@ The first player to reach **7 points in any one attribute** (Aura, Skill, or Sta
   - Very Rare = 3 RP
   - Epic = 4 RP
   - Spectacular = 5 RP
+  - Diamond = 5 RP
+  - Lava = 5 RP
+  - Holo = 5 RP
+  - Gold = 5 RP
+  - Bubblegum = 5 RP
+  - Emerald = 5 RP
 
 ### Card Components
 Every card has:
 - **Name**
 - **Three Attributes**: Aura, Skill, Stamina
-- **Rarity** (Core, Rare, Very Rare, Epic, Spectacular)
+- **Rarity** (Core, Rare, Very Rare, Epic, Spectacular, Diamond, Lava, Holo, Gold, Bubblegum, Emerald)
 - **Rarity Points** value
 - **Base Score** (Aura + Skill + Stamina)
 
@@ -29,6 +35,7 @@ Every card has:
 - Very Rare: +50%
 - Epic: +100%
 - Spectacular: +300%
+- Diamond / Lava / Holo / Gold / Bubblegum / Emerald: +400%
 
 ### Gameplay (Turn Structure)
 
