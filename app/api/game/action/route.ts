@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAuthClient, createAdminClient } from '@/lib/supabase-server'
 import {
   GameState, GameAction, PlayerKey, Attribute, TieBank, EMPTY_BANK,
-  Card, RARITY_MULTIPLIER, checkWinner, drawCard,
+  Card, getSprintScore, checkWinner, drawCard,
 } from '@/lib/game-types'
 
 // Helper: claim all tie bank gems into the winner's points and reset
@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
     // Sprint Token requires the acting player to hold a Rare or higher card
     const myCard = myKey === 'player1' ? p1Card : p2Card
     if (myCard.rarity === 'Core') return err('Sprint Token requires a Rare or higher card')
-    const p1Score = Math.round(p1Card.total_score * RARITY_MULTIPLIER[p1Card.rarity])
-    const p2Score = Math.round(p2Card.total_score * RARITY_MULTIPLIER[p2Card.rarity])
+    const p1Score = getSprintScore(p1Card)
+    const p2Score = getSprintScore(p2Card)
 
     state.sprintUsed = { ...state.sprintUsed, [myKey]: true }
 
@@ -188,8 +188,8 @@ export async function POST(req: NextRequest) {
       if (!cardPair) return NextResponse.json({ error: 'Card data missing', details: 'decline faceoff cards not available' }, { status: 400 })
 
       const { p1Card, p2Card } = cardPair
-      const p1Score = Math.round(p1Card.total_score * RARITY_MULTIPLIER[p1Card.rarity])
-      const p2Score = Math.round(p2Card.total_score * RARITY_MULTIPLIER[p2Card.rarity])
+      const p1Score = getSprintScore(p1Card)
+      const p2Score = getSprintScore(p2Card)
 
       if (p1Score === p2Score) {
         state.tieBank.aura += 1

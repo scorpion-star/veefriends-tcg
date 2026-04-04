@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAuthClient, createAdminClient } from '@/lib/supabase-server'
+import { normalizeRarity } from '@/lib/game-types'
 
 const RARITY_PRICES: Record<string, number> = {
   Core:         50,
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 404 })
 
-  const price = RARITY_PRICES[card.rarity]
+  const price = RARITY_PRICES[normalizeRarity(card.rarity)]
   if (!price) return NextResponse.json({ error: 'Card not available for purchase' }, { status: 400 })
 
   // Fetch user coins

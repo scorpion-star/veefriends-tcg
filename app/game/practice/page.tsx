@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'rea
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { Card, Attribute, TieBank, EMPTY_BANK, shuffle, RARITY_MULTIPLIER } from '@/lib/game-types'
+import { Card, Attribute, TieBank, EMPTY_BANK, shuffle, getSprintScore } from '@/lib/game-types'
 import { getCardArtUrl } from '@/lib/card-art'
 import { SFX } from '@/lib/sfx'
 import RoundBurst from '@/app/components/RoundBurst'
@@ -270,7 +270,7 @@ function cpuDecide(
   if (state.phase === 'challenge') {
     // Sprint logic — CPU card must be Rare or higher to use Sprint Token
     if (!state.sprintUsed.cpu && cpuCard.rarity !== 'Core') {
-      const cpuSprint = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
+      const cpuSprint = getSprintScore(cpuCard)
 
       if (difficulty >= 7) {
         // Sprint if CPU's sprint score is decent and human is ahead on the board
@@ -531,8 +531,8 @@ function PracticePageInner() {
         const cpuCard = prev.cpu.currentCard ? cardMap[prev.cpu.currentCard] : null
         if (!humanCard || !cpuCard) return prev
 
-        const humanVal = Math.round(humanCard.total_score * RARITY_MULTIPLIER[humanCard.rarity])
-        const cpuVal = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
+        const humanVal = getSprintScore(humanCard)
+        const cpuVal = getSprintScore(cpuCard)
         const next = { ...prev, sprintUsed: { ...prev.sprintUsed, cpu: true } }
 
         if (humanVal === cpuVal) return tieReplay(next, 'sprint', humanVal, cpuVal)
@@ -565,8 +565,8 @@ function PracticePageInner() {
           const humanCard = prev.human.currentCard ? cardMap[prev.human.currentCard] : null
           const cpuCard = prev.cpu.currentCard ? cardMap[prev.cpu.currentCard] : null
           if (!humanCard || !cpuCard) return prev
-          const humanVal = Math.round(humanCard.total_score * RARITY_MULTIPLIER[humanCard.rarity])
-          const cpuVal = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
+          const humanVal = getSprintScore(humanCard)
+          const cpuVal = getSprintScore(cpuCard)
           const base = { ...prev, currentRound: { ...prev.currentRound, attribute: null, declinedAttributes: newDeclined, currentDefender: null as Side | null } }
           if (humanVal === cpuVal) return tieReplay(base, 'sprint', humanVal, cpuVal)
           const winner: Side = humanVal > cpuVal ? 'human' : 'cpu'
@@ -613,8 +613,8 @@ function PracticePageInner() {
       const cpuCard = prev.cpu.currentCard ? cardMap[prev.cpu.currentCard] : null
       if (!cpuCard) return prev
 
-      const humanVal = Math.round(humanCard.total_score * RARITY_MULTIPLIER[humanCard.rarity])
-      const cpuVal = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
+      const humanVal = getSprintScore(humanCard)
+      const cpuVal = getSprintScore(cpuCard)
       const next = { ...prev, sprintUsed: { ...prev.sprintUsed, human: true } }
 
       if (humanVal === cpuVal) return tieReplay(next, 'sprint', humanVal, cpuVal)
@@ -651,8 +651,8 @@ function PracticePageInner() {
         const humanCard = prev.human.currentCard ? cardMap[prev.human.currentCard] : null
         const cpuCard = prev.cpu.currentCard ? cardMap[prev.cpu.currentCard] : null
         if (!humanCard || !cpuCard) return prev
-        const humanVal = Math.round(humanCard.total_score * RARITY_MULTIPLIER[humanCard.rarity])
-        const cpuVal = Math.round(cpuCard.total_score * RARITY_MULTIPLIER[cpuCard.rarity])
+        const humanVal = getSprintScore(humanCard)
+        const cpuVal = getSprintScore(cpuCard)
         const base = { ...prev, currentRound: { ...prev.currentRound, attribute: null, declinedAttributes: newDeclined, currentDefender: null as Side | null } }
         if (humanVal === cpuVal) return tieReplay(base, 'sprint', humanVal, cpuVal)
         const winner: Side = humanVal > cpuVal ? 'human' : 'cpu'

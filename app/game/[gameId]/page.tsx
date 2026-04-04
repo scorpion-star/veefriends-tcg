@@ -19,6 +19,12 @@ const RARITY_BORDER: Record<string, string> = {
   'Very Rare': 'border-orange-500',
   Epic: 'border-green-500',
   Spectacular: 'border-blue-400',
+  Diamond: 'border-cyan-300',
+  Lava: 'border-red-500',
+  Holo: 'border-violet-400',
+  Gold: 'border-yellow-400',
+  Bubblegum: 'border-pink-400',
+  Emerald: 'border-emerald-400',
 }
 
 const ATTR_COLOR: Record<Attribute, string> = {

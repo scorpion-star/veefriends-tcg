@@ -29,8 +29,10 @@ export async function GET() {
     .eq('id', 1)
     .maybeSingle()
 
+  const storedIds: Record<string, number[]> = rotation?.card_ids ?? {}
   const needsRefresh = !rotation ||
-    (Date.now() - new Date(rotation.refreshed_at).getTime()) > REFRESH_HOURS * 60 * 60 * 1000
+    (Date.now() - new Date(rotation.refreshed_at).getTime()) > REFRESH_HOURS * 60 * 60 * 1000 ||
+    RARITIES.some(r => !(storedIds[r]?.length))
 
   let cardIds: Record<string, number[]>
 

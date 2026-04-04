@@ -108,7 +108,11 @@ export default function Collection() {
       const formatted = cardsData.map(card => ({ ...card, quantity: qtyMap[card.id] ?? 1 }))
       formatted.sort((a, b) => {
         const order = ['Spectacular', 'Epic', 'Very Rare', 'Rare', 'Core']
-        return order.indexOf(normalizeRarity(a.rarity)) - order.indexOf(normalizeRarity(b.rarity))
+        const tierDiff = order.indexOf(normalizeRarity(a.rarity)) - order.indexOf(normalizeRarity(b.rarity))
+        if (tierDiff !== 0) return tierDiff
+        // Within same tier, sort by actual rarity string then name so every
+        // variant type (Diamond, Lava, etc.) clusters consistently
+        return a.rarity.localeCompare(b.rarity) || a.name.localeCompare(b.name)
       })
       setCards(formatted)
     }
@@ -387,7 +391,7 @@ export default function Collection() {
 
             <div className="flex flex-wrap gap-4">
               {cards.map(card => (
-                <div key={card.id} className="relative hover:scale-[1.03] transition-transform duration-200">
+                <div key={card.id} style={{ width: 320 * 0.55, height: 448 * 0.55, flexShrink: 0, position: 'relative' }} className="hover:scale-[1.03] transition-transform duration-200">
                   <CoreCard
                     scale={0.55}
                     name={card.name}
